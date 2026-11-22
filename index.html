@@ -6,10 +6,10 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   />
-  <meta name="theme-color" content="#09090b" />
+  <meta name="theme-color" content="#5c6bc0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>ALT//RUN_07 — 3D Runner</title>
+  <title>ALT//RUN_07 — Comic 3D Runner</title>
 
   <script type="importmap">
     {
@@ -22,19 +22,23 @@
 
   <style>
     :root {
-      --bg-void: #09090b;
-      --bg-panel: rgba(15, 11, 22, 0.88);
-      --bg-card: rgba(24, 17, 36, 0.92);
-      --pink: #ff2a85;
-      --pink-pastel: #ff99c8;
-      --purple: #9d4edd;
-      --purple-pastel: #e0aaff;
-      --cyan: #56cfe1;
-      --text-main: #f8f0ff;
-      --text-dim: #a899bd;
-      --border-glow: rgba(255, 42, 133, 0.55);
-      --border-purple: rgba(157, 78, 221, 0.6);
-      --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Mono", "Courier New", ui-monospace, monospace;
+      --ink: #14101f;
+      --paper: #fdf9ff;
+      --card: #ffffff;
+      --card-soft: #f3ecff;
+      --pink: #ff3b8d;
+      --pink-soft: #ff9ec7;
+      --purple: #7c4dff;
+      --purple-soft: #d0bfff;
+      --yellow: #ffd43b;
+      --mint: #20c997;
+      --cyan: #3bc9db;
+      --text-ink: #171226;
+      --text-muted: #5c5373;
+      --font-comic: "Trebuchet MS", "Arial Rounded MT Bold", "Segoe UI", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+      --shadow-hard: 4px 4px 0px var(--ink);
+      --shadow-sm: 2.5px 2.5px 0px var(--ink);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-left: env(safe-area-inset-left, 0px);
@@ -57,9 +61,9 @@
       width: 100%;
       height: 100%;
       height: 100dvh;
-      background-color: var(--bg-void);
-      color: var(--text-main);
-      font-family: var(--font-mono);
+      background-color: #5c6bc0;
+      color: var(--text-ink);
+      font-family: var(--font-comic);
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
@@ -76,21 +80,13 @@
       z-index: 1;
     }
 
-    /* Тонкий CRT / Y2K оверлей поверх канваса */
-    .crt-overlay {
+    /* Легкая комиксная рамка-виньетка без затемнения экрана */
+    .comic-vignette {
       position: fixed;
       inset: 0;
       z-index: 2;
       pointer-events: none;
-      background:
-        repeating-linear-gradient(
-          0deg,
-          rgba(255, 42, 133, 0.03) 0px,
-          rgba(255, 42, 133, 0.03) 1px,
-          transparent 1px,
-          transparent 3px
-        ),
-        radial-gradient(circle at 50% 50%, transparent 55%, rgba(9, 9, 11, 0.65) 100%);
+      box-shadow: inset 0 0 0 4px rgba(20, 16, 31, 0.25);
     }
 
     .hidden {
@@ -138,85 +134,84 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 4px 9px;
-      background: rgba(9, 9, 11, 0.78);
-      border: 1px solid var(--border-purple);
-      box-shadow: 0 0 10px rgba(157, 78, 221, 0.25), inset 0 0 8px rgba(255, 42, 133, 0.08);
+      padding: 4px 10px;
+      background: var(--paper);
+      color: var(--text-ink);
+      border: 2.5px solid var(--ink);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      font-weight: 800;
       line-height: 1.2;
-      backdrop-filter: blur(4px);
     }
 
     .hud-chip.distance {
-      border-color: var(--pink);
-      color: var(--text-main);
+      background: var(--yellow);
       font-size: 14px;
-      text-shadow: 0 0 8px rgba(255, 42, 133, 0.7);
+      transform: skewX(-4deg);
     }
 
     .hud-chip.mediators {
-      border-color: var(--pink-pastel);
-      color: var(--pink-pastel);
+      background: var(--pink);
+      color: #ffffff;
     }
 
     .hud-chip.chapter {
-      border-color: var(--purple);
-      color: var(--purple-pastel);
-      text-transform: uppercase;
+      background: var(--purple);
+      color: #ffffff;
       font-size: 11px;
     }
 
     .hud-progress-wrap {
-      width: 148px;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(157, 78, 221, 0.5);
+      width: 162px;
+      height: 9px;
+      background: var(--paper);
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
     }
 
     .hud-progress-fill {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, var(--purple), var(--pink));
-      box-shadow: 0 0 8px var(--pink);
+      background: linear-gradient(90deg, var(--pink), var(--yellow));
       transition: width 0.12s linear;
     }
 
     .hud-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       pointer-events: auto;
     }
 
     .hud-icon-btn {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       display: grid;
       place-items: center;
-      background: rgba(9, 9, 11, 0.82);
-      color: var(--text-main);
-      border: 1px solid var(--border-glow);
-      box-shadow: 0 0 10px rgba(255, 42, 133, 0.28);
-      font-family: var(--font-mono);
-      font-size: 15px;
-      font-weight: 700;
+      background: var(--paper);
+      color: var(--ink);
+      border: 2.5px solid var(--ink);
+      border-radius: 11px;
+      box-shadow: var(--shadow-sm);
+      font-size: 16px;
+      font-weight: 900;
       cursor: pointer;
       padding: 0;
-      transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+      transition: transform 0.08s ease;
     }
 
     .hud-icon-btn:active {
-      transform: scale(0.92);
-      background: rgba(255, 42, 133, 0.25);
+      transform: translate(2px, 2px);
+      box-shadow: none;
     }
 
     .hud-icon-btn.muted {
-      border-color: var(--text-dim);
-      color: var(--text-dim);
-      box-shadow: none;
+      background: #d8d4e3;
+      color: var(--text-muted);
     }
 
     /* Активные баффы */
@@ -233,28 +228,17 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      min-width: 128px;
-      padding: 5px 8px;
-      background: rgba(9, 9, 11, 0.84);
-      border: 1px solid var(--purple);
-      box-shadow: 0 0 12px rgba(157, 78, 221, 0.35);
-      backdrop-filter: blur(4px);
+      min-width: 140px;
+      padding: 5px 10px;
+      background: var(--paper);
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .buff-pill.buff-energy {
-      border-color: var(--pink);
-      box-shadow: 0 0 12px rgba(255, 42, 133, 0.45);
-    }
-
-    .buff-pill.buff-shield {
-      border-color: var(--purple-pastel);
-      box-shadow: 0 0 12px rgba(224, 170, 255, 0.4);
-    }
-
-    .buff-pill.buff-slowmo {
-      border-color: var(--cyan);
-      box-shadow: 0 0 12px rgba(86, 207, 225, 0.4);
-    }
+    .buff-pill.buff-energy { background: #ffe3ef; }
+    .buff-pill.buff-shield { background: #efe5ff; }
+    .buff-pill.buff-slowmo { background: #dff9fc; }
 
     .buff-icon {
       font-size: 16px;
@@ -273,16 +257,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-family: var(--font-mono);
       font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      font-weight: 800;
       text-transform: uppercase;
     }
 
     .buff-bar {
       width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.14);
+      height: 6px;
+      background: rgba(20, 16, 31, 0.14);
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
       overflow: hidden;
     }
 
@@ -293,191 +279,236 @@
       transition: width 0.08s linear;
     }
 
-    .buff-shield .buff-bar-fill {
-      background: var(--purple-pastel);
-    }
+    .buff-shield .buff-bar-fill { background: var(--purple); }
+    .buff-slowmo .buff-bar-fill { background: var(--cyan); }
 
-    .buff-slowmo .buff-bar-fill {
-      background: var(--cyan);
-    }
-
-    /* ===================== МОДАЛЬНЫЕ ОКНА ===================== */
+    /* ===================== КОМИКС-МОДАЛКИ ===================== */
     .modal {
       position: fixed;
       inset: 0;
       z-index: 30;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       padding:
-        calc(14px + var(--safe-top))
-        calc(14px + var(--safe-right))
-        calc(14px + var(--safe-bottom))
-        calc(14px + var(--safe-left));
-      background: rgba(9, 9, 11, 0.78);
-      backdrop-filter: blur(7px);
+        calc(12px + var(--safe-top))
+        calc(12px + var(--safe-right))
+        calc(12px + var(--safe-bottom))
+        calc(12px + var(--safe-left));
+      background: rgba(22, 18, 42, 0.34);
+      backdrop-filter: blur(2px);
       pointer-events: auto;
+    }
+
+    #modal-endings {
+      align-items: center;
     }
 
     .modal-window {
       position: relative;
       width: 100%;
-      max-width: 440px;
-      max-height: 100%;
+      max-width: 460px;
+      max-height: 82dvh;
       overflow-y: auto;
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
-      background: var(--bg-panel);
-      border: 1px solid var(--pink);
-      box-shadow:
-        0 0 24px rgba(255, 42, 133, 0.25),
-        0 0 0 1px rgba(157, 78, 221, 0.45) inset;
-      padding: 16px;
+      background-color: var(--paper);
+      background-image: radial-gradient(rgba(124, 77, 255, 0.12) 1.2px, transparent 1.2px);
+      background-size: 12px 12px;
+      border: 3.5px solid var(--ink);
+      border-radius: 20px;
+      box-shadow: 6px 6px 0px var(--ink);
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-    }
-
-    .modal-window::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--purple), var(--pink), var(--purple-pastel));
+      gap: 11px;
     }
 
     .modal-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      border-bottom: 1px dashed rgba(224, 170, 255, 0.28);
-      padding-bottom: 10px;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 2.5px dashed rgba(20, 16, 31, 0.2);
     }
 
     .modal-title {
       margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
       text-transform: uppercase;
-      color: var(--text-main);
-      text-shadow: 0 0 10px rgba(255, 42, 133, 0.75);
+      color: var(--ink);
+      text-shadow: 2px 2px 0 var(--pink-soft);
     }
 
     .modal-subtitle {
       font-size: 11px;
-      color: var(--purple-pastel);
-      letter-spacing: 0.06em;
+      font-weight: 800;
+      color: var(--purple);
+      letter-spacing: 0.04em;
     }
 
-    .y2k-tag {
-      display: inline-block;
-      padding: 2px 7px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: var(--bg-void);
-      background: linear-gradient(90deg, var(--pink-pastel), var(--purple-pastel));
-      text-transform: uppercase;
+    .comic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--ink);
+      background: var(--yellow);
+      border: 2.5px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 2px 2px 0 var(--ink);
+      transform: rotate(-2deg);
+      white-space: nowrap;
     }
 
     /* Кнопки */
     .btn {
-      font-family: var(--font-mono);
-      font-weight: 700;
+      font-family: var(--font-comic);
+      font-weight: 900;
       font-size: 13px;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: var(--text-main);
-      background: var(--bg-card);
-      border: 1px solid var(--purple);
+      color: var(--ink);
+      background: var(--card);
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
       padding: 10px 14px;
       cursor: pointer;
-      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
     }
 
     .btn:active:not(:disabled) {
-      transform: scale(0.97);
+      transform: translate(2px, 2px);
+      box-shadow: none;
     }
 
     .btn:disabled {
-      opacity: 0.42;
+      opacity: 0.45;
       cursor: not-allowed;
-      filter: grayscale(0.5);
+      box-shadow: none;
     }
 
     .btn-primary {
       width: 100%;
       padding: 13px 16px;
-      font-size: 16px;
-      background: linear-gradient(135deg, var(--pink), var(--purple));
-      border-color: var(--pink-pastel);
+      font-size: 17px;
+      background: linear-gradient(135deg, var(--pink), #ff6b9d);
       color: #ffffff;
-      box-shadow: 0 0 18px rgba(255, 42, 133, 0.55);
-      text-shadow: 0 0 6px rgba(9, 9, 11, 0.65);
+      box-shadow: var(--shadow-hard);
+      text-shadow: 1.5px 1.5px 0 var(--ink);
     }
 
     .btn-secondary {
       width: 100%;
-      border-color: var(--purple-pastel);
-      color: var(--purple-pastel);
-      background: rgba(157, 78, 221, 0.14);
+      background: var(--purple-soft);
+      color: var(--ink);
+    }
+
+    .btn-mint {
+      background: var(--mint);
+      color: var(--ink);
     }
 
     .btn-ghost {
-      background: transparent;
-      border-color: rgba(255, 153, 200, 0.45);
-      color: var(--pink-pastel);
-      padding: 7px 10px;
-      font-size: 11px;
+      background: var(--yellow);
+      padding: 6px 10px;
+      font-size: 12px;
     }
 
-    /* ===================== 1. ХАБ / МАГАЗИН ===================== */
-    .hub-summary {
+    /* ===================== ХАБ СО ВКЛАДКАМИ ===================== */
+    .hub-top-bar {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
 
-    .stat-box {
-      background: var(--bg-card);
-      border: 1px solid rgba(157, 78, 221, 0.35);
-      padding: 8px 10px;
+    .stat-pill {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 11px;
+      background: var(--card);
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: var(--shadow-sm);
     }
 
     .stat-label {
       font-size: 10px;
-      color: var(--text-dim);
+      font-weight: 800;
+      color: var(--text-muted);
       text-transform: uppercase;
     }
 
     .stat-value {
+      font-family: var(--font-mono);
       font-size: 15px;
-      font-weight: 800;
-      color: var(--pink-pastel);
+      font-weight: 900;
+      color: var(--pink);
+    }
+
+    .stat-pill.best .stat-value {
+      color: var(--purple);
     }
 
     .hub-last-run {
-      padding: 8px 10px;
+      padding: 8px 11px;
       font-size: 12px;
-      color: var(--purple-pastel);
-      background: rgba(255, 42, 133, 0.1);
-      border-left: 3px solid var(--pink);
+      font-weight: 800;
+      color: var(--ink);
+      background: var(--yellow);
+      border: 2.5px solid var(--ink);
+      border-radius: 11px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Вкладки меню */
+    .hub-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .hub-tab {
+      font-family: var(--font-comic);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 8px 6px;
+      background: var(--card-soft);
+      color: var(--text-muted);
+      border: 2.5px solid var(--ink);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.12s ease, transform 0.08s ease;
+    }
+
+    .hub-tab.active {
+      background: var(--purple);
+      color: #ffffff;
+      box-shadow: var(--shadow-sm);
+      transform: translateY(-1px);
+    }
+
+    .tab-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .section-label {
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 900;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: var(--purple-pastel);
-      margin: 0 0 6px;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -496,62 +527,77 @@
       align-items: center;
       justify-content: center;
       gap: 2px;
-      padding: 8px 4px;
-      background: var(--bg-card);
-      border: 1px solid rgba(157, 78, 221, 0.45);
-      color: var(--text-main);
+      padding: 7px 4px;
+      background: var(--card);
+      border: 2.5px solid var(--ink);
+      border-radius: 11px;
+      color: var(--ink);
       cursor: pointer;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+      box-shadow: 2px 2px 0 var(--ink);
     }
 
     .chapter-btn .ch-num {
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .chapter-btn .ch-state {
       font-size: 9px;
-      color: var(--text-dim);
+      font-weight: 800;
+      color: var(--text-muted);
     }
 
     .chapter-btn.active {
-      border-color: var(--pink);
-      background: rgba(255, 42, 133, 0.22);
-      box-shadow: 0 0 12px rgba(255, 42, 133, 0.45);
+      background: var(--pink);
       color: #ffffff;
+      transform: translateY(-2px);
     }
 
     .chapter-btn.active .ch-state {
-      color: var(--pink-pastel);
+      color: var(--yellow);
     }
 
     .chapter-btn.locked {
-      opacity: 0.4;
+      opacity: 0.45;
+      background: #e5e0f0;
+      box-shadow: none;
       cursor: not-allowed;
-      border-style: dashed;
     }
 
     .chapter-desc {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--text-dim);
-      min-height: 16px;
+      padding: 8px 10px;
+      background: var(--card);
+      border: 2px solid var(--ink);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-ink);
     }
 
+    /* Магазин улучшений и дополнений */
     .upgrade-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      max-height: 35dvh;
+      overflow-y: auto;
+      padding-right: 2px;
     }
 
     .upgrade-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       padding: 9px 10px;
-      background: var(--bg-card);
-      border: 1px solid rgba(157, 78, 221, 0.4);
+      background: var(--card);
+      border: 2.5px solid var(--ink);
+      border-radius: 13px;
+      box-shadow: 2.5px 2.5px 0 var(--ink);
+    }
+
+    .upgrade-card.is-addon {
+      background: #fff9db;
     }
 
     .upgrade-info {
@@ -562,46 +608,121 @@
     }
 
     .upgrade-name {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .addon-tag {
+      font-size: 9px;
+      padding: 1px 5px;
+      background: var(--mint);
+      border: 1.5px solid var(--ink);
+      border-radius: 6px;
+      text-transform: uppercase;
     }
 
     .upgrade-meta {
-      font-size: 10px;
-      color: var(--text-dim);
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.25;
     }
 
     .upgrade-lvl {
-      color: var(--purple-pastel);
-      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--purple);
+      font-weight: 900;
     }
 
     .btn-upgrade {
       flex-shrink: 0;
-      min-width: 92px;
-      padding: 8px 10px;
+      min-width: 84px;
+      padding: 8px 9px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--pink);
+      color: #ffffff;
+    }
+
+    /* Скины */
+    .skins-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      max-height: 36dvh;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .skin-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 7px;
+      padding: 10px;
+      background: var(--card);
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .skin-card.equipped {
+      background: #f0e6ff;
+      border-color: var(--purple);
+    }
+
+    .skin-swatches {
+      display: flex;
+      gap: 5px;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+    }
+
+    .skin-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .skin-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.25;
+    }
+
+    .skin-btn {
+      width: 100%;
+      padding: 7px 8px;
       font-size: 11px;
-      border-color: var(--pink);
-      color: var(--pink-pastel);
-      background: rgba(255, 42, 133, 0.14);
+      font-family: var(--font-mono);
     }
 
     .hub-actions {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
+      padding-top: 2px;
     }
 
-    /* ===================== 2. ВИЗУАЛЬНАЯ НОВЕЛЛА ===================== */
+    .hub-actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    /* ===================== ВИЗУАЛЬНАЯ НОВЕЛЛА ===================== */
     #modal-vn {
       align-items: flex-end;
-      background: linear-gradient(
-        180deg,
-        rgba(9, 9, 11, 0.35) 0%,
-        rgba(9, 9, 11, 0.85) 55%,
-        rgba(9, 9, 11, 0.96) 100%
-      );
+      background: linear-gradient(180deg, rgba(20, 16, 36, 0.25) 0%, rgba(20, 16, 36, 0.72) 100%);
     }
 
     .vn-stage {
@@ -612,19 +733,18 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
-      gap: 0;
     }
 
     .vn-portrait-wrap {
-      width: 210px;
-      height: 210px;
-      max-height: 34dvh;
+      width: 205px;
+      height: 205px;
+      max-height: 33dvh;
       display: flex;
       align-items: flex-end;
       justify-content: center;
       margin-bottom: -10px;
       z-index: 1;
-      filter: drop-shadow(0 0 18px rgba(255, 42, 133, 0.45));
+      filter: drop-shadow(4px 4px 0 rgba(20, 16, 31, 0.85));
       pointer-events: none;
     }
 
@@ -641,11 +761,10 @@
       max-height: 58dvh;
       overflow-y: auto;
       touch-action: pan-y;
-      background: rgba(12, 9, 18, 0.94);
-      border: 1px solid var(--pink);
-      box-shadow:
-        0 0 26px rgba(157, 78, 221, 0.35),
-        inset 0 0 16px rgba(255, 42, 133, 0.08);
+      background: var(--paper);
+      border: 3.5px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 6px 6px 0 var(--ink);
       padding: 14px;
       display: flex;
       flex-direction: column;
@@ -661,27 +780,30 @@
 
     .vn-speaker {
       display: inline-block;
-      padding: 3px 10px;
-      background: linear-gradient(90deg, var(--pink), var(--purple));
+      padding: 3px 12px;
+      background: var(--pink);
       color: #ffffff;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
       font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      font-weight: 900;
       text-transform: uppercase;
     }
 
     .vn-mood {
+      font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--purple-pastel);
-      letter-spacing: 0.06em;
+      font-weight: 800;
+      color: var(--purple);
     }
 
     .vn-text {
       margin: 0;
-      min-height: 66px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--text-main);
+      min-height: 62px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.48;
+      color: var(--text-ink);
       white-space: pre-wrap;
     }
 
@@ -696,22 +818,22 @@
       display: flex;
       flex-direction: column;
       gap: 7px;
-      margin-top: 2px;
     }
 
     .vn-choice-btn {
       width: 100%;
       text-align: left;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
+      font-family: var(--font-comic);
+      font-size: 12.5px;
+      font-weight: 800;
       line-height: 1.35;
-      color: var(--text-main);
-      background: rgba(157, 78, 221, 0.16);
-      border: 1px solid var(--purple);
-      padding: 10px 12px;
+      color: var(--ink);
+      background: var(--card-soft);
+      border: 2.5px solid var(--ink);
+      border-radius: 11px;
+      box-shadow: 2.5px 2.5px 0 var(--ink);
+      padding: 9px 12px;
       cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     }
 
     .vn-choice-btn::before {
@@ -720,29 +842,29 @@
     }
 
     .vn-choice-btn:active {
-      transform: scale(0.98);
-      background: rgba(255, 42, 133, 0.28);
-      border-color: var(--pink);
+      transform: translate(2px, 2px);
+      box-shadow: none;
+      background: var(--yellow);
     }
 
-    /* ===================== 3. ФИНАЛ / ГАЛЕРЕЯ КОНЦОВОК ===================== */
+    /* ===================== ГАЛЕРЕЯ КОНЦОВОК ===================== */
     .ending-featured {
       padding: 12px;
-      background: linear-gradient(145deg, rgba(255, 42, 133, 0.18), rgba(157, 78, 221, 0.18));
-      border: 1px solid var(--pink);
-      box-shadow: 0 0 18px rgba(255, 42, 133, 0.28);
+      background: #fff4fa;
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 7px;
     }
 
     .ending-featured-art {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto;
+      width: 112px;
+      height: 112px;
       display: grid;
       place-items: center;
-      filter: drop-shadow(0 0 12px rgba(255, 42, 133, 0.55));
     }
 
     .ending-featured-art svg {
@@ -753,8 +875,8 @@
     .ending-featured-title {
       margin: 0;
       font-size: 16px;
-      font-weight: 800;
-      color: var(--pink-pastel);
+      font-weight: 900;
+      color: var(--pink);
       text-align: center;
       text-transform: uppercase;
     }
@@ -763,7 +885,7 @@
       margin: 0;
       font-size: 12px;
       line-height: 1.45;
-      color: var(--text-main);
+      color: var(--text-ink);
       text-align: center;
     }
 
@@ -775,21 +897,23 @@
 
     .ending-card {
       padding: 10px 12px;
-      background: var(--bg-card);
-      border: 1px solid rgba(157, 78, 221, 0.45);
+      background: var(--card);
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: 2.5px 2.5px 0 var(--ink);
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
     .ending-card.unlocked {
-      border-color: var(--pink-pastel);
-      box-shadow: 0 0 10px rgba(255, 42, 133, 0.2);
+      background: #f4eeff;
     }
 
     .ending-card.locked {
       opacity: 0.55;
       border-style: dashed;
+      box-shadow: none;
     }
 
     .ending-card-head {
@@ -797,24 +921,16 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--purple-pastel);
-    }
-
-    .ending-card.unlocked .ending-card-head {
-      color: var(--pink-pastel);
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--ink);
     }
 
     .ending-card-body {
       margin: 0;
-      font-size: 11px;
+      font-size: 11.5px;
       line-height: 1.4;
-      color: var(--text-dim);
-    }
-
-    .ending-card.unlocked .ending-card-body {
-      color: var(--text-main);
+      color: var(--text-muted);
     }
 
     @keyframes blink {
@@ -822,25 +938,21 @@
       51%, 100% { opacity: 0; }
     }
 
-    @media (max-height: 640px) {
+    @media (max-height: 660px) {
       .modal-window {
-        padding: 12px;
-        gap: 10px;
+        padding: 11px;
+        gap: 8px;
       }
       .vn-portrait-wrap {
-        width: 150px;
-        height: 150px;
-      }
-      .vn-text {
-        min-height: 52px;
-        font-size: 12px;
+        width: 148px;
+        height: 148px;
       }
     }
   </style>
 </head>
 <body>
   <canvas id="game-canvas" aria-label="Игровое поле ALT//RUN_07"></canvas>
-  <div class="crt-overlay" aria-hidden="true"></div>
+  <div class="comic-vignette" aria-hidden="true"></div>
 
   <!-- Компактный мобильный HUD -->
   <header id="hud" class="hidden">
@@ -854,7 +966,7 @@
             <span>✦</span><span id="hud-mediators">0</span>
           </div>
           <div class="hud-chip chapter">
-            <span id="hud-chapter">ГЛАВА 1</span>
+            <span id="hud-chapter">ГЛ.1</span>
           </div>
         </div>
         <div class="hud-progress-wrap" aria-label="Прогресс главы">
@@ -863,12 +975,8 @@
       </div>
 
       <div class="hud-controls">
-        <button id="btn-mute" class="hud-icon-btn" type="button" aria-label="Звук">
-          ♪
-        </button>
-        <button id="btn-pause" class="hud-icon-btn" type="button" aria-label="Пауза">
-          ❚❚
-        </button>
+        <button id="btn-mute" class="hud-icon-btn" type="button" aria-label="Звук">♪</button>
+        <button id="btn-pause" class="hud-icon-btn" type="button" aria-label="Пауза">❚❚</button>
       </div>
     </div>
 
@@ -880,9 +988,7 @@
             <span>Энергетик</span>
             <span id="buff-energy-timer">0.0s</span>
           </div>
-          <div class="buff-bar">
-            <div id="buff-energy-bar" class="buff-bar-fill"></div>
-          </div>
+          <div class="buff-bar"><div id="buff-energy-bar" class="buff-bar-fill"></div></div>
         </div>
       </div>
 
@@ -893,9 +999,7 @@
             <span>Чокер-щит</span>
             <span id="buff-shield-timer">0.0s</span>
           </div>
-          <div class="buff-bar">
-            <div id="buff-shield-bar" class="buff-bar-fill"></div>
-          </div>
+          <div class="buff-bar"><div id="buff-shield-bar" class="buff-bar-fill"></div></div>
         </div>
       </div>
 
@@ -906,121 +1010,95 @@
             <span>Тамагочи</span>
             <span id="buff-slowmo-timer">0.0s</span>
           </div>
-          <div class="buff-bar">
-            <div id="buff-slowmo-bar" class="buff-bar-fill"></div>
-          </div>
+          <div class="buff-bar"><div id="buff-slowmo-bar" class="buff-bar-fill"></div></div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Модальное окно 1: Хаб / Магазин -->
+  <!-- Модальное окно 1: Переработанный Комикс-Хаб -->
   <section id="modal-hub" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="hub-title">
     <div class="modal-window">
       <div class="modal-header">
         <div>
           <h1 id="hub-title" class="modal-title">ALT//RUN_07</h1>
-          <div class="modal-subtitle">✞ НЕОНОВЫЙ МЕТРОПОЛИТЕН ✞</div>
+          <div class="modal-subtitle">COMIC EDITION // 5 ГЛАВ</div>
         </div>
-        <span class="y2k-tag">Y2K.EXE</span>
+        <span class="comic-badge">✦ ISSUE #07</span>
       </div>
 
       <div id="hub-last-run" class="hub-last-run hidden"></div>
 
-      <div class="hub-summary">
-        <div class="stat-box">
+      <div class="hub-top-bar">
+        <div class="stat-pill">
           <span class="stat-label">Медиаторы</span>
           <span class="stat-value">✦ <span id="hub-mediators">0</span></span>
         </div>
-        <div class="stat-box">
+        <div class="stat-pill best">
           <span class="stat-label">Рекорд</span>
           <span class="stat-value"><span id="hub-best-distance">0</span> м</span>
         </div>
       </div>
 
-      <div>
+      <nav class="hub-tabs" role="tablist">
+        <button class="hub-tab active" type="button" data-tab="run">▶ Забег</button>
+        <button class="hub-tab" type="button" data-tab="shop">⚡ Магазин</button>
+        <button class="hub-tab" type="button" data-tab="skins">🎀 Скины</button>
+      </nav>
+
+      <!-- Вкладка 1: Главы и старт -->
+      <div id="tab-run" class="tab-panel">
         <div class="section-label">
           <span>Выбор главы</span>
           <span id="hub-chapter-status">1 / 5</span>
         </div>
         <div id="chapter-list" class="chapter-grid">
           <button class="chapter-btn active" type="button" data-chapter="1">
-            <span class="ch-num">I</span>
-            <span class="ch-state">OPEN</span>
+            <span class="ch-num">I</span><span class="ch-state">PLAY</span>
           </button>
           <button class="chapter-btn locked" type="button" data-chapter="2" disabled>
-            <span class="ch-num">II</span>
-            <span class="ch-state">LOCK</span>
+            <span class="ch-num">II</span><span class="ch-state">LOCK</span>
           </button>
           <button class="chapter-btn locked" type="button" data-chapter="3" disabled>
-            <span class="ch-num">III</span>
-            <span class="ch-state">LOCK</span>
+            <span class="ch-num">III</span><span class="ch-state">LOCK</span>
           </button>
           <button class="chapter-btn locked" type="button" data-chapter="4" disabled>
-            <span class="ch-num">IV</span>
-            <span class="ch-state">LOCK</span>
+            <span class="ch-num">IV</span><span class="ch-state">LOCK</span>
           </button>
           <button class="chapter-btn locked" type="button" data-chapter="5" disabled>
-            <span class="ch-num">V</span>
-            <span class="ch-state">LOCK</span>
+            <span class="ch-num">V</span><span class="ch-state">LOCK</span>
           </button>
         </div>
-        <div id="hub-chapter-desc" class="chapter-desc">Глава 1: Станция «Окраина»</div>
+        <div id="hub-chapter-desc" class="chapter-desc">Глава 1: Побег из панельки</div>
       </div>
 
-      <div>
+      <!-- Вкладка 2: Апгрейды и новые дополнения -->
+      <div id="tab-shop" class="tab-panel hidden">
         <div class="section-label">
-          <span>Апгрейды</span>
-          <span>ЗА МЕДИАТОРЫ ✦</span>
+          <span>Баффы и новые дополнения</span>
+          <span>ЗА ✦</span>
         </div>
-        <div id="upgrade-list" class="upgrade-list">
-          <div class="upgrade-card" data-upgrade="energy">
-            <div class="upgrade-info">
-              <span class="upgrade-name">⚡ Энергетик</span>
-              <span class="upgrade-meta">
-                Ур. <span id="upg-energy-lvl" class="upgrade-lvl">1</span> · Магнит и турбо-длительность
-              </span>
-            </div>
-            <button id="btn-upg-energy" class="btn btn-upgrade" type="button" data-upgrade="energy">
-              ✦ <span id="upg-energy-cost">25</span>
-            </button>
-          </div>
+        <div id="upgrade-list" class="upgrade-list"></div>
+      </div>
 
-          <div class="upgrade-card" data-upgrade="shield">
-            <div class="upgrade-info">
-              <span class="upgrade-name">⛓ Чокер-щит</span>
-              <span class="upgrade-meta">
-                Ур. <span id="upg-shield-lvl" class="upgrade-lvl">1</span> · Защита от препятствий
-              </span>
-            </div>
-            <button id="btn-upg-shield" class="btn btn-upgrade" type="button" data-upgrade="shield">
-              ✦ <span id="upg-shield-cost">30</span>
-            </button>
-          </div>
-
-          <div class="upgrade-card" data-upgrade="slowmo">
-            <div class="upgrade-info">
-              <span class="upgrade-name">👾 Тамагочи-слоумо</span>
-              <span class="upgrade-meta">
-                Ур. <span id="upg-slowmo-lvl" class="upgrade-lvl">1</span> · Замедление времени
-              </span>
-            </div>
-            <button id="btn-upg-slowmo" class="btn btn-upgrade" type="button" data-upgrade="slowmo">
-              ✦ <span id="upg-slowmo-cost">35</span>
-            </button>
-          </div>
+      <!-- Вкладка 3: Скины героини -->
+      <div id="tab-skins" class="tab-panel hidden">
+        <div class="section-label">
+          <span>Образы Альтушки</span>
+          <span id="hub-skins-count">1 / 4</span>
         </div>
+        <div id="skins-list" class="skins-grid"></div>
       </div>
 
       <div class="hub-actions">
-        <button id="btn-resume" class="btn btn-secondary hidden" type="button">
+        <button id="btn-resume" class="btn btn-mint hidden" type="button">
           ▶ ПРОДОЛЖИТЬ ЗАБЕГ
         </button>
         <button id="btn-run" class="btn btn-primary" type="button">
-          БЕЖАТЬ ✦
+          БЕЖАТЬ! ✦
         </button>
         <button id="btn-open-endings" class="btn btn-secondary" type="button">
-          Концовки (<span id="hub-endings-count">0/0</span>)
+          📖 Концовки (<span id="hub-endings-count">0/4</span>)
         </button>
       </div>
     </div>
@@ -1041,21 +1119,19 @@
     </div>
   </section>
 
-  <!-- Модальное окно 3: Экран финала / Галерея концовок -->
+  <!-- Модальное окно 3: Галерея концовок -->
   <section id="modal-endings" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="endings-title">
     <div class="modal-window">
       <div class="modal-header">
         <div>
           <h2 id="endings-title" class="modal-title">КОНЦОВКИ</h2>
-          <div id="endings-subtitle" class="modal-subtitle">АРХИВ ПАМЯТИ // TUMBLR_LOG</div>
+          <div class="modal-subtitle">АРХИВ ВЫПУСКОВ // COMIC LOG</div>
         </div>
-        <button id="btn-close-endings-top" class="btn btn-ghost" type="button" aria-label="Закрыть">
-          ✕
-        </button>
+        <button id="btn-close-endings-top" class="btn btn-ghost" type="button" aria-label="Закрыть">✕</button>
       </div>
 
       <div id="ending-featured" class="ending-featured hidden">
-        <span id="ending-featured-tag" class="y2k-tag">ФИНАЛ ОТКРЫТ</span>
+        <span id="ending-featured-tag" class="comic-badge">ФИНАЛ ОТКРЫТ</span>
         <div id="ending-featured-art" class="ending-featured-art"></div>
         <h3 id="ending-featured-title" class="ending-featured-title"></h3>
         <p id="ending-featured-desc" class="ending-featured-desc"></p>
@@ -1063,13 +1139,13 @@
 
       <div class="section-label">
         <span>Галерея финалов</span>
-        <span id="endings-gallery-count">0 / 0</span>
+        <span id="endings-gallery-count">0 / 4</span>
       </div>
 
       <div id="endings-gallery" class="endings-gallery"></div>
 
       <button id="btn-close-endings" class="btn btn-primary" type="button">
-        ВЕРНУТЬСЯ В ХАБ
+        ВЕРНУТЬСЯ В МЕНЮ
       </button>
     </div>
   </section>
