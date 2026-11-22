@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>ALT//RUN_07 — 3D Runner</title>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-void: #09090b;
+      --bg-panel: rgba(15, 11, 22, 0.88);
+      --bg-card: rgba(24, 17, 36, 0.92);
+      --pink: #ff2a85;
+      --pink-pastel: #ff99c8;
+      --purple: #9d4edd;
+      --purple-pastel: #e0aaff;
+      --cyan: #56cfe1;
+      --text-main: #f8f0ff;
+      --text-dim: #a899bd;
+      --border-glow: rgba(255, 42, 133, 0.55);
+      --border-purple: rgba(157, 78, 221, 0.6);
+      --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Mono", "Courier New", ui-monospace, monospace;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    html,
+    body,
+    canvas {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    #game-canvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Тонкий CRT / Y2K оверлей поверх канваса */
+    .crt-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 42, 133, 0.03) 0px,
+          rgba(255, 42, 133, 0.03) 1px,
+          transparent 1px,
+          transparent 3px
+        ),
+        radial-gradient(circle at 50% 50%, transparent 55%, rgba(9, 9, 11, 0.65) 100%);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ===================== HUD ===================== */
+    #hud {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding:
+        calc(10px + var(--safe-top))
+        calc(12px + var(--safe-right))
+        calc(12px + var(--safe-bottom))
+        calc(12px + var(--safe-left));
+    }
+
+    .hud-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .hud-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .hud-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .hud-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      background: rgba(9, 9, 11, 0.78);
+      border: 1px solid var(--border-purple);
+      box-shadow: 0 0 10px rgba(157, 78, 221, 0.25), inset 0 0 8px rgba(255, 42, 133, 0.08);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      backdrop-filter: blur(4px);
+    }
+
+    .hud-chip.distance {
+      border-color: var(--pink);
+      color: var(--text-main);
+      font-size: 14px;
+      text-shadow: 0 0 8px rgba(255, 42, 133, 0.7);
+    }
+
+    .hud-chip.mediators {
+      border-color: var(--pink-pastel);
+      color: var(--pink-pastel);
+    }
+
+    .hud-chip.chapter {
+      border-color: var(--purple);
+      color: var(--purple-pastel);
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .hud-progress-wrap {
+      width: 148px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(157, 78, 221, 0.5);
+      overflow: hidden;
+    }
+
+    .hud-progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      box-shadow: 0 0 8px var(--pink);
+      transition: width 0.12s linear;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto;
+    }
+
+    .hud-icon-btn {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      background: rgba(9, 9, 11, 0.82);
+      color: var(--text-main);
+      border: 1px solid var(--border-glow);
+      box-shadow: 0 0 10px rgba(255, 42, 133, 0.28);
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .hud-icon-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 42, 133, 0.25);
+    }
+
+    .hud-icon-btn.muted {
+      border-color: var(--text-dim);
+      color: var(--text-dim);
+      box-shadow: none;
+    }
+
+    /* Активные баффы */
+    .hud-buffs {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      margin-top: auto;
+      padding-bottom: 4px;
+    }
+
+    .buff-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 128px;
+      padding: 5px 8px;
+      background: rgba(9, 9, 11, 0.84);
+      border: 1px solid var(--purple);
+      box-shadow: 0 0 12px rgba(157, 78, 221, 0.35);
+      backdrop-filter: blur(4px);
+    }
+
+    .buff-pill.buff-energy {
+      border-color: var(--pink);
+      box-shadow: 0 0 12px rgba(255, 42, 133, 0.45);
+    }
+
+    .buff-pill.buff-shield {
+      border-color: var(--purple-pastel);
+      box-shadow: 0 0 12px rgba(224, 170, 255, 0.4);
+    }
+
+    .buff-pill.buff-slowmo {
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(86, 207, 225, 0.4);
+    }
+
+    .buff-icon {
+      font-size: 16px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .buff-meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .buff-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .buff-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+    }
+
+    .buff-bar-fill {
+      width: 100%;
+      height: 100%;
+      background: var(--pink);
+      transition: width 0.08s linear;
+    }
+
+    .buff-shield .buff-bar-fill {
+      background: var(--purple-pastel);
+    }
+
+    .buff-slowmo .buff-bar-fill {
+      background: var(--cyan);
+    }
+
+    /* ===================== МОДАЛЬНЫЕ ОКНА ===================== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding:
+        calc(14px + var(--safe-top))
+        calc(14px + var(--safe-right))
+        calc(14px + var(--safe-bottom))
+        calc(14px + var(--safe-left));
+      background: rgba(9, 9, 11, 0.78);
+      backdrop-filter: blur(7px);
+      pointer-events: auto;
+    }
+
+    .modal-window {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      max-height: 100%;
+      overflow-y: auto;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+      background: var(--bg-panel);
+      border: 1px solid var(--pink);
+      box-shadow:
+        0 0 24px rgba(255, 42, 133, 0.25),
+        0 0 0 1px rgba(157, 78, 221, 0.45) inset;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-window::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--purple), var(--pink), var(--purple-pastel));
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px dashed rgba(224, 170, 255, 0.28);
+      padding-bottom: 10px;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      text-shadow: 0 0 10px rgba(255, 42, 133, 0.75);
+    }
+
+    .modal-subtitle {
+      font-size: 11px;
+      color: var(--purple-pastel);
+      letter-spacing: 0.06em;
+    }
+
+    .y2k-tag {
+      display: inline-block;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--bg-void);
+      background: linear-gradient(90deg, var(--pink-pastel), var(--purple-pastel));
+      text-transform: uppercase;
+    }
+
+    /* Кнопки */
+    .btn {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      background: var(--bg-card);
+      border: 1px solid var(--purple);
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 13px 16px;
+      font-size: 16px;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      border-color: var(--pink-pastel);
+      color: #ffffff;
+      box-shadow: 0 0 18px rgba(255, 42, 133, 0.55);
+      text-shadow: 0 0 6px rgba(9, 9, 11, 0.65);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      border-color: var(--purple-pastel);
+      color: var(--purple-pastel);
+      background: rgba(157, 78, 221, 0.14);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: rgba(255, 153, 200, 0.45);
+      color: var(--pink-pastel);
+      padding: 7px 10px;
+      font-size: 11px;
+    }
+
+    /* ===================== 1. ХАБ / МАГАЗИН ===================== */
+    .hub-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .stat-box {
+      background: var(--bg-card);
+      border: 1px solid rgba(157, 78, 221, 0.35);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--pink-pastel);
+    }
+
+    .hub-last-run {
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--purple-pastel);
+      background: rgba(255, 42, 133, 0.1);
+      border-left: 3px solid var(--pink);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--purple-pastel);
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .chapter-btn {
+      font-family: var(--font-mono);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 8px 4px;
+      background: var(--bg-card);
+      border: 1px solid rgba(157, 78, 221, 0.45);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    }
+
+    .chapter-btn .ch-num {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .chapter-btn .ch-state {
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    .chapter-btn.active {
+      border-color: var(--pink);
+      background: rgba(255, 42, 133, 0.22);
+      box-shadow: 0 0 12px rgba(255, 42, 133, 0.45);
+      color: #ffffff;
+    }
+
+    .chapter-btn.active .ch-state {
+      color: var(--pink-pastel);
+    }
+
+    .chapter-btn.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+
+    .chapter-desc {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      min-height: 16px;
+    }
+
+    .upgrade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .upgrade-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      background: var(--bg-card);
+      border: 1px solid rgba(157, 78, 221, 0.4);
+    }
+
+    .upgrade-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .upgrade-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .upgrade-meta {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .upgrade-lvl {
+      color: var(--purple-pastel);
+      font-weight: 700;
+    }
+
+    .btn-upgrade {
+      flex-shrink: 0;
+      min-width: 92px;
+      padding: 8px 10px;
+      font-size: 11px;
+      border-color: var(--pink);
+      color: var(--pink-pastel);
+      background: rgba(255, 42, 133, 0.14);
+    }
+
+    .hub-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* ===================== 2. ВИЗУАЛЬНАЯ НОВЕЛЛА ===================== */
+    #modal-vn {
+      align-items: flex-end;
+      background: linear-gradient(
+        180deg,
+        rgba(9, 9, 11, 0.35) 0%,
+        rgba(9, 9, 11, 0.85) 55%,
+        rgba(9, 9, 11, 0.96) 100%
+      );
+    }
+
+    .vn-stage {
+      width: 100%;
+      max-width: 480px;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0;
+    }
+
+    .vn-portrait-wrap {
+      width: 210px;
+      height: 210px;
+      max-height: 34dvh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      margin-bottom: -10px;
+      z-index: 1;
+      filter: drop-shadow(0 0 18px rgba(255, 42, 133, 0.45));
+      pointer-events: none;
+    }
+
+    .vn-portrait-wrap svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .vn-dialog-box {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-height: 58dvh;
+      overflow-y: auto;
+      touch-action: pan-y;
+      background: rgba(12, 9, 18, 0.94);
+      border: 1px solid var(--pink);
+      box-shadow:
+        0 0 26px rgba(157, 78, 221, 0.35),
+        inset 0 0 16px rgba(255, 42, 133, 0.08);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .vn-speaker-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .vn-speaker {
+      display: inline-block;
+      padding: 3px 10px;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .vn-mood {
+      font-size: 10px;
+      color: var(--purple-pastel);
+      letter-spacing: 0.06em;
+    }
+
+    .vn-text {
+      margin: 0;
+      min-height: 66px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-main);
+      white-space: pre-wrap;
+    }
+
+    .vn-text.typing::after {
+      content: "▌";
+      color: var(--pink);
+      margin-left: 2px;
+      animation: blink 0.7s steps(2, start) infinite;
+    }
+
+    .vn-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-top: 2px;
+    }
+
+    .vn-choice-btn {
+      width: 100%;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text-main);
+      background: rgba(157, 78, 221, 0.16);
+      border: 1px solid var(--purple);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .vn-choice-btn::before {
+      content: "▸ ";
+      color: var(--pink);
+    }
+
+    .vn-choice-btn:active {
+      transform: scale(0.98);
+      background: rgba(255, 42, 133, 0.28);
+      border-color: var(--pink);
+    }
+
+    /* ===================== 3. ФИНАЛ / ГАЛЕРЕЯ КОНЦОВОК ===================== */
+    .ending-featured {
+      padding: 12px;
+      background: linear-gradient(145deg, rgba(255, 42, 133, 0.18), rgba(157, 78, 221, 0.18));
+      border: 1px solid var(--pink);
+      box-shadow: 0 0 18px rgba(255, 42, 133, 0.28);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ending-featured-art {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 0 12px rgba(255, 42, 133, 0.55));
+    }
+
+    .ending-featured-art svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .ending-featured-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--pink-pastel);
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .ending-featured-desc {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    .endings-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ending-card {
+      padding: 10px 12px;
+      background: var(--bg-card);
+      border: 1px solid rgba(157, 78, 221, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ending-card.unlocked {
+      border-color: var(--pink-pastel);
+      box-shadow: 0 0 10px rgba(255, 42, 133, 0.2);
+    }
+
+    .ending-card.locked {
+      opacity: 0.55;
+      border-style: dashed;
+    }
+
+    .ending-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--purple-pastel);
+    }
+
+    .ending-card.unlocked .ending-card-head {
+      color: var(--pink-pastel);
+    }
+
+    .ending-card-body {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-dim);
+    }
+
+    .ending-card.unlocked .ending-card-body {
+      color: var(--text-main);
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    @media (max-height: 640px) {
+      .modal-window {
+        padding: 12px;
+        gap: 10px;
+      }
+      .vn-portrait-wrap {
+        width: 150px;
+        height: 150px;
+      }
+      .vn-text {
+        min-height: 52px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game-canvas" aria-label="Игровое поле ALT//RUN_07"></canvas>
+  <div class="crt-overlay" aria-hidden="true"></div>
+
+  <!-- Компактный мобильный HUD -->
+  <header id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="hud-stats">
+        <div class="hud-row">
+          <div class="hud-chip distance">
+            <span id="hud-distance">0</span><span>м</span>
+          </div>
+          <div class="hud-chip mediators" title="Медиаторы">
+            <span>✦</span><span id="hud-mediators">0</span>
+          </div>
+          <div class="hud-chip chapter">
+            <span id="hud-chapter">ГЛАВА 1</span>
+          </div>
+        </div>
+        <div class="hud-progress-wrap" aria-label="Прогресс главы">
+          <div id="hud-chapter-progress" class="hud-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="hud-controls">
+        <button id="btn-mute" class="hud-icon-btn" type="button" aria-label="Звук">
+          ♪
+        </button>
+        <button id="btn-pause" class="hud-icon-btn" type="button" aria-label="Пауза">
+          ❚❚
+        </button>
+      </div>
+    </div>
+
+    <div id="hud-buffs" class="hud-buffs" aria-live="polite">
+      <div id="buff-energy" class="buff-pill buff-energy hidden">
+        <span class="buff-icon">⚡</span>
+        <div class="buff-meta">
+          <div class="buff-head">
+            <span>Энергетик</span>
+            <span id="buff-energy-timer">0.0s</span>
+          </div>
+          <div class="buff-bar">
+            <div id="buff-energy-bar" class="buff-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="buff-shield" class="buff-pill buff-shield hidden">
+        <span class="buff-icon">⛓</span>
+        <div class="buff-meta">
+          <div class="buff-head">
+            <span>Чокер-щит</span>
+            <span id="buff-shield-timer">0.0s</span>
+          </div>
+          <div class="buff-bar">
+            <div id="buff-shield-bar" class="buff-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="buff-slowmo" class="buff-pill buff-slowmo hidden">
+        <span class="buff-icon">👾</span>
+        <div class="buff-meta">
+          <div class="buff-head">
+            <span>Тамагочи</span>
+            <span id="buff-slowmo-timer">0.0s</span>
+          </div>
+          <div class="buff-bar">
+            <div id="buff-slowmo-bar" class="buff-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Модальное окно 1: Хаб / Магазин -->
+  <section id="modal-hub" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="hub-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <h1 id="hub-title" class="modal-title">ALT//RUN_07</h1>
+          <div class="modal-subtitle">✞ НЕОНОВЫЙ МЕТРОПОЛИТЕН ✞</div>
+        </div>
+        <span class="y2k-tag">Y2K.EXE</span>
+      </div>
+
+      <div id="hub-last-run" class="hub-last-run hidden"></div>
+
+      <div class="hub-summary">
+        <div class="stat-box">
+          <span class="stat-label">Медиаторы</span>
+          <span class="stat-value">✦ <span id="hub-mediators">0</span></span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Рекорд</span>
+          <span class="stat-value"><span id="hub-best-distance">0</span> м</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">
+          <span>Выбор главы</span>
+          <span id="hub-chapter-status">1 / 5</span>
+        </div>
+        <div id="chapter-list" class="chapter-grid">
+          <button class="chapter-btn active" type="button" data-chapter="1">
+            <span class="ch-num">I</span>
+            <span class="ch-state">OPEN</span>
+          </button>
+          <button class="chapter-btn locked" type="button" data-chapter="2" disabled>
+            <span class="ch-num">II</span>
+            <span class="ch-state">LOCK</span>
+          </button>
+          <button class="chapter-btn locked" type="button" data-chapter="3" disabled>
+            <span class="ch-num">III</span>
+            <span class="ch-state">LOCK</span>
+          </button>
+          <button class="chapter-btn locked" type="button" data-chapter="4" disabled>
+            <span class="ch-num">IV</span>
+            <span class="ch-state">LOCK</span>
+          </button>
+          <button class="chapter-btn locked" type="button" data-chapter="5" disabled>
+            <span class="ch-num">V</span>
+            <span class="ch-state">LOCK</span>
+          </button>
+        </div>
+        <div id="hub-chapter-desc" class="chapter-desc">Глава 1: Станция «Окраина»</div>
+      </div>
+
+      <div>
+        <div class="section-label">
+          <span>Апгрейды</span>
+          <span>ЗА МЕДИАТОРЫ ✦</span>
+        </div>
+        <div id="upgrade-list" class="upgrade-list">
+          <div class="upgrade-card" data-upgrade="energy">
+            <div class="upgrade-info">
+              <span class="upgrade-name">⚡ Энергетик</span>
+              <span class="upgrade-meta">
+                Ур. <span id="upg-energy-lvl" class="upgrade-lvl">1</span> · Магнит и турбо-длительность
+              </span>
+            </div>
+            <button id="btn-upg-energy" class="btn btn-upgrade" type="button" data-upgrade="energy">
+              ✦ <span id="upg-energy-cost">25</span>
+            </button>
+          </div>
+
+          <div class="upgrade-card" data-upgrade="shield">
+            <div class="upgrade-info">
+              <span class="upgrade-name">⛓ Чокер-щит</span>
+              <span class="upgrade-meta">
+                Ур. <span id="upg-shield-lvl" class="upgrade-lvl">1</span> · Защита от препятствий
+              </span>
+            </div>
+            <button id="btn-upg-shield" class="btn btn-upgrade" type="button" data-upgrade="shield">
+              ✦ <span id="upg-shield-cost">30</span>
+            </button>
+          </div>
+
+          <div class="upgrade-card" data-upgrade="slowmo">
+            <div class="upgrade-info">
+              <span class="upgrade-name">👾 Тамагочи-слоумо</span>
+              <span class="upgrade-meta">
+                Ур. <span id="upg-slowmo-lvl" class="upgrade-lvl">1</span> · Замедление времени
+              </span>
+            </div>
+            <button id="btn-upg-slowmo" class="btn btn-upgrade" type="button" data-upgrade="slowmo">
+              ✦ <span id="upg-slowmo-cost">35</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hub-actions">
+        <button id="btn-resume" class="btn btn-secondary hidden" type="button">
+          ▶ ПРОДОЛЖИТЬ ЗАБЕГ
+        </button>
+        <button id="btn-run" class="btn btn-primary" type="button">
+          БЕЖАТЬ ✦
+        </button>
+        <button id="btn-open-endings" class="btn btn-secondary" type="button">
+          Концовки (<span id="hub-endings-count">0/0</span>)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Модальное окно 2: Визуальная новелла -->
+  <section id="modal-vn" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="vn-speaker">
+    <div class="vn-stage">
+      <div id="vn-portrait" class="vn-portrait-wrap" aria-hidden="true"></div>
+      <div class="vn-dialog-box">
+        <div class="vn-speaker-row">
+          <span id="vn-speaker" class="vn-speaker">АЛИСА</span>
+          <span id="vn-mood" class="vn-mood">[REC ● 00:00]</span>
+        </div>
+        <p id="vn-text" class="vn-text"></p>
+        <div id="vn-choices" class="vn-choices"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Модальное окно 3: Экран финала / Галерея концовок -->
+  <section id="modal-endings" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="endings-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <h2 id="endings-title" class="modal-title">КОНЦОВКИ</h2>
+          <div id="endings-subtitle" class="modal-subtitle">АРХИВ ПАМЯТИ // TUMBLR_LOG</div>
+        </div>
+        <button id="btn-close-endings-top" class="btn btn-ghost" type="button" aria-label="Закрыть">
+          ✕
+        </button>
+      </div>
+
+      <div id="ending-featured" class="ending-featured hidden">
+        <span id="ending-featured-tag" class="y2k-tag">ФИНАЛ ОТКРЫТ</span>
+        <div id="ending-featured-art" class="ending-featured-art"></div>
+        <h3 id="ending-featured-title" class="ending-featured-title"></h3>
+        <p id="ending-featured-desc" class="ending-featured-desc"></p>
+      </div>
+
+      <div class="section-label">
+        <span>Галерея финалов</span>
+        <span id="endings-gallery-count">0 / 0</span>
+      </div>
+
+      <div id="endings-gallery" class="endings-gallery"></div>
+
+      <button id="btn-close-endings" class="btn btn-primary" type="button">
+        ВЕРНУТЬСЯ В ХАБ
+      </button>
+    </div>
+  </section>
+
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
