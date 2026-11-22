@@ -8,66 +8,123 @@ export const CHAPTERS = [
   {
     id: 1,
     title: 'Побег из панельки',
-    subtitle: 'Сектор-07 // Бетонные дворы',
+    subtitle: 'Сектор-07 // Сумеречные дворы',
     targetDistance: 8000,
-    cassetteIds: ['c1_1', 'c1_2', 'c1_3'],
-    palette: {
-      fog: 0x0b0714,
-      accent: 0xff2a85,
-      secondary: 0x9d4edd,
-      grid: 0x2c1445
-    }
+    cassetteIds: ['c1_1', 'c1_2', 'c1_3']
   },
   {
     id: 2,
     title: 'Андеграунд-рейв в депо',
-    subtitle: 'Трамвайный парк // Басы на рельсах',
+    subtitle: 'Трамвайный парк // Закатные рельсы',
     targetDistance: 11000,
-    cassetteIds: ['c2_1', 'c2_2', 'c2_3'],
-    palette: {
-      fog: 0x100518,
-      accent: 0xff2a85,
-      secondary: 0x56cfe1,
-      grid: 0x3b1259
-    }
+    cassetteIds: ['c2_1', 'c2_2', 'c2_3']
   },
   {
     id: 3,
     title: 'Неоновый ТЦ',
-    subtitle: 'Молл «Галактика» // Ночной лимб',
+    subtitle: 'Молл «Галактика» // Пастельный поп-арт',
     targetDistance: 14000,
-    cassetteIds: ['c3_1', 'c3_2', 'c3_3'],
-    palette: {
-      fog: 0x14081c,
-      accent: 0xff99c8,
-      secondary: 0x9d4edd,
-      grid: 0x4a196b
-    }
+    cassetteIds: ['c3_1', 'c3_2', 'c3_3']
   },
   {
     id: 4,
     title: 'Ветка метро Призрак',
-    subtitle: 'Глубина -80м // Потерянная линия',
+    subtitle: 'Глубина -80м // Лазурный тоннель',
     targetDistance: 17000,
-    cassetteIds: ['c4_1', 'c4_2', 'c4_3'],
-    palette: {
-      fog: 0x060914,
-      accent: 0x56cfe1,
-      secondary: 0x9d4edd,
-      grid: 0x142c47
-    }
+    cassetteIds: ['c4_1', 'c4_2', 'c4_3']
   },
   {
     id: 5,
     title: 'Крыша телебашни',
-    subtitle: 'Высота 540м // Источник Серого Эфира',
+    subtitle: 'Высота 540м // Розовый рассвет',
     targetDistance: 20000,
-    cassetteIds: ['c5_1', 'c5_2', 'c5_3'],
+    cassetteIds: ['c5_1', 'c5_2', 'c5_3']
+  }
+];
+
+export const SKINS = [
+  {
+    id: 'classic',
+    name: 'Классик Альт',
+    desc: 'Черное худи, розово-фиолетовые хвостики и полосатые гетры.',
+    cost: 0,
+    swatches: ['#211a2e', '#ff3b8d', '#9775fa'],
     palette: {
-      fog: 0x120512,
-      accent: 0xff2a85,
-      secondary: 0xe0aaff,
-      grid: 0x520f42
+      hoodie: 0x241d33,
+      hoodieTrim: 0xff5ca8,
+      skirt: 0x2f2140,
+      hairBase: 0x1a1526,
+      hairLeft: 0x9775fa,
+      hairRight: 0xff4d94,
+      sockA: '#1c1626',
+      sockB: '#ff7eb6',
+      boot: 0x181520,
+      sole: 0xff3b8d,
+      backpack: 0x1d1826,
+      skin: 0xffe4e6
+    }
+  },
+  {
+    id: 'pastel',
+    name: 'Пастель Гот',
+    desc: 'Светло-лавандовый образ с мятными прядями и белым рюкзаком.',
+    cost: 120,
+    swatches: ['#e5dbff', '#63e6be', '#ffa8d6'],
+    palette: {
+      hoodie: 0xe5dbff,
+      hoodieTrim: 0x63e6be,
+      skirt: 0x3b2c59,
+      hairBase: 0xf8f0ff,
+      hairLeft: 0x63e6be,
+      hairRight: 0xff8ec6,
+      sockA: '#ffffff',
+      sockB: '#b197fc',
+      boot: 0xf4edff,
+      sole: 0x63e6be,
+      backpack: 0xffffff,
+      skin: 0xffe6eb
+    }
+  },
+  {
+    id: 'cyber',
+    name: 'Кибер-Китти',
+    desc: 'Алый винил, бирюзовые акценты и глянцевые платформы.',
+    cost: 280,
+    swatches: ['#e0315a', '#3bc9db', '#1c1e2e'],
+    palette: {
+      hoodie: 0x202438,
+      hoodieTrim: 0x3bc9db,
+      skirt: 0xd6336c,
+      hairBase: 0x181c2b,
+      hairLeft: 0x3bc9db,
+      hairRight: 0xff4d6d,
+      sockA: '#1a1f30',
+      sockB: '#3bc9db',
+      boot: 0x1a1c28,
+      sole: 0x3bc9db,
+      backpack: 0xd6336c,
+      skin: 0xffe3e3
+    }
+  },
+  {
+    id: 'comicpop',
+    name: 'Комикс-Поп',
+    desc: 'Солнечно-желтый оверсайз в стиле ярких страниц комикса.',
+    cost: 450,
+    swatches: ['#ffd43b', '#ff3b8d', '#4c6ef5'],
+    palette: {
+      hoodie: 0xffd43b,
+      hoodieTrim: 0xff3b8d,
+      skirt: 0x4c6ef5,
+      hairBase: 0x2b2d5c,
+      hairLeft: 0xff3b8d,
+      hairRight: 0xffd43b,
+      sockA: '#4c6ef5',
+      sockB: '#ffd43b',
+      boot: 0x23254a,
+      sole: 0xffd43b,
+      backpack: 0xff3b8d,
+      skin: 0xffe5e0
     }
   }
 ];
@@ -75,37 +132,77 @@ export const CHAPTERS = [
 export const UPGRADE_CONFIG = {
   energy: {
     key: 'energy',
-    alias: 'energy',
+    icon: '⚡',
     name: 'Энергетик',
+    desc: 'Длительность турбо-рывка и сноса преград',
+    isAddon: false,
+    minLevel: 1,
     baseCost: 25,
-    costGrowth: 2.15,
+    costGrowth: 2.1,
     baseDuration: 6.0,
     durationStep: 1.5,
     speedMultiplier: 1.38
   },
   choker: {
     key: 'choker',
-    alias: 'shield',
+    icon: '⛓',
     name: 'Чокер-щит',
+    desc: 'Время щита от 1 удара + сильный магнит',
+    isAddon: false,
+    minLevel: 1,
     baseCost: 30,
-    costGrowth: 2.15,
+    costGrowth: 2.1,
     baseDuration: 8.0,
     durationStep: 2.0
   },
   tamagotchi: {
     key: 'tamagotchi',
-    alias: 'slowmo',
+    icon: '👾',
     name: 'Тамагочи-слоумо',
+    desc: 'Длительность замедления времени',
+    isAddon: false,
+    minLevel: 1,
     baseCost: 35,
-    costGrowth: 2.15,
+    costGrowth: 2.1,
     baseDuration: 5.5,
     durationStep: 1.4,
     timeScale: 0.52
+  },
+  // --- НОВЫЕ ПОКУПНЫЕ ДОПОЛНЕНИЯ ---
+  boots: {
+    key: 'boots',
+    icon: '🥾',
+    name: 'Платформы-пружины',
+    desc: 'Открывает Двойной прыжок в воздухе и усиливает его',
+    isAddon: true,
+    minLevel: 0,
+    baseCost: 55,
+    costGrowth: 1.95
+  },
+  magnet: {
+    key: 'magnet',
+    icon: '🧲',
+    name: 'Магнит-цепочка',
+    desc: 'Постоянно притягивает соседние медиаторы в забеге',
+    isAddon: true,
+    minLevel: 0,
+    baseCost: 45,
+    costGrowth: 1.9
+  },
+  multiplier: {
+    key: 'multiplier',
+    icon: '🎸',
+    name: 'Винил-бустер',
+    desc: 'Шанс получить x2 медиаторов (+20% за уровень)',
+    isAddon: true,
+    minLevel: 0,
+    baseCost: 65,
+    costGrowth: 2.0
   }
 };
 
 export const CASSETTES = [
-  // ================= ГЛАВА 1: ПОБЕГ ИЗ ПАНЕЛЬКИ =================
+  // ГЛАВА 1
   {
     id: 'c1_1',
     chapter: 1,
@@ -131,7 +228,7 @@ export const CASSETTES = [
         reward: 15
       },
       {
-        label: '«О, апокалипсис? Наконец-то достойный вайб для ночной пробежки!»',
+        label: '«О, апокалипсис? Наконец-то достойный вайб для пробежки!»',
         effects: { empathy: 0, cynicism: 0, madness: 3 },
         replyEmotion: 'psycho',
         reply: 'В наушниках бьет хардстайл, сирены идеально попадают в бит. Открываю банку энердоса и срываюсь с места.',
@@ -147,7 +244,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'neutral',
     mood: 'REC ● 01:42 // ГАРАЖИ',
-    text: 'На второй кассете слышен свист баллончика. Местный райтеры из команды «404» нарисовали неоновые стрелки на бетонных блоках, чтобы сбить трекеры дронов, но одного пацана в балаклаве зажали у турникетов. Кира на записи просит: «Не бросай локалку, без живых людей андер сдохнет быстрее баса».',
+    text: 'На второй кассете слышен свист баллончика. Местные райтеры из команды «404» нарисовали яркие стрелки на бетонных блоках, чтобы сбить трекеры дронов, но одного пацана в балаклаве зажали у турникетов. Кира на записи просит: «Не бросай локалку, без живых людей андер сдохнет быстрее баса».',
     choices: [
       {
         label: 'Отвлечь дронов вспышкой плеера, чтобы райтер успел уйти',
@@ -176,11 +273,11 @@ export const CASSETTES = [
     id: 'c1_3',
     chapter: 1,
     index: 3,
-    title: 'TAPE_03 // СИНИЙ СВЕТ У ПЕРЕЕЗДА',
+    title: 'TAPE_03 // СВЕТ У ПЕРЕЕЗДА',
     speaker: 'АЛИСА',
     emotion: 'smirk',
     mood: 'REC ● 02:09 // Ж/Д ПУТИ',
-    text: 'Панельки остаются позади. Пленка шипит, и поверх голоса Киры пробивается странный цифровой скрежет: «Если дошла до старого переезда — прыгай в сторону заброшенного трамвайного депо. Там наши держат последний ночной рейв. Но осторожно: Серый Эфир уже просачивается в провода и ломает картинку».',
+    text: 'Панельки остаются позади. Пленка шипит, и поверх голоса Киры пробивается странный цифровой скрежет: «Если дошла до старого переезда — прыгай в сторону заброшенного трамвайного депо. Там наши держат последний рейв. Но осторожно: Серый Эфир уже просачивается в провода и ломает картинку».',
     choices: [
       {
         label: '«Если там собрались живые, я должна предупредить всех о рейде»',
@@ -193,20 +290,19 @@ export const CASSETTES = [
         label: '«Рейв посреди зачистки? Гениально. Заберу кассеты и свалю»',
         effects: { empathy: 0, cynicism: 3, madness: 0 },
         replyEmotion: 'smirk',
-        reply: 'Толпа на танцполе — идеальный живой щит от камер. Возьму, что нужно, и растворюсь в темноте.',
+        reply: 'Толпа на танцполе — идеальный живой щит от камер. Возьму, что нужно, и растворюсь за углом.',
         reward: 25
       },
       {
         label: '«Провода поют на моей частоте! Выкручиваю громкость в красную зону»',
         effects: { empathy: 0, cynicism: 0, madness: 3 },
         replyEmotion: 'psycho',
-        reply: 'Воздух пахнет озоном и малиновым сиропом. В глазах мелькают фиолетовые пиксели — реальность наконец-то стала нормальной.',
+        reply: 'Воздух пахнет озоном и малиновым сиропом. В глазах мелькают комиксные вспышки — реальность наконец-то стала нормальной.',
         reward: 25
       }
     ]
   },
-
-  // ================= ГЛАВА 2: АНДЕГРАУНД-РЕЙВ В ДЕПО =================
+  // ГЛАВА 2
   {
     id: 'c2_1',
     chapter: 2,
@@ -215,7 +311,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'neutral',
     mood: 'REC ● 02:33 // ДЕПО',
-    text: 'В ангаре грохочет брейккор, стробоскопы режут дым от дешевых вейпов. Кассета приклеена скотчем к колонке. Голос Киры перекрывает басы: «Алис, генератор еле дышит, а звук — единственное, что глушит Серый Эфир в этом квартале. Пацаны с пульта спрашивают, подкинешь ли пару медиаторов на сгоревший предохранитель».',
+    text: 'В ангаре грохочет брейккор, прожекторы режут дым. Кассета приклеена скотчем к колонке. Голос Киры перекрывает басы: «Алис, генератор еле дышит, а звук — единственное, что глушит Серый Эфир в этом квартале. Пацаны с пульта спрашивают, подкинешь ли пару медиаторов на сгоревший предохранитель».',
     choices: [
       {
         label: 'Скинуть медиаторы диджеям — пусть музыка орет до рассвета',
@@ -248,13 +344,13 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'psycho',
     mood: 'REC ● 02:51 // ТАНЦПОЛ',
-    text: 'За барной стойкой из старых шпал нахожу кассету рядом с мерцающей банкой кастомного энергетика «GLITCH_ZERO». На этикетке почерк Киры: «Не пей это, если хочешь остаться человеком. Оно ускоряет синапсы, но стирает грань между тобой и сетью». Внутри плещется неоновая жидкость.',
+    text: 'За барной стойкой из старых шпал нахожу кассету рядом с мерцающей банкой кастомного энергетика «GLITCH_ZERO». На этикетке почерк Киры: «Не пей это, если хочешь остаться человеком. Оно ускоряет синапсы, но стирает грань между тобой и сетью». Внутри плещется искрящаяся жидкость.',
     choices: [
       {
         label: 'Выпить залпом — чем быстрее мозг, тем слаще глитч',
         effects: { empathy: 0, cynicism: 0, madness: 4 },
         replyEmotion: 'psycho',
-        reply: 'Вкус батарейки и вишневой жвачки! Пульс уходит в космос, трамваи вокруг кажутся медленными полигонами.',
+        reply: 'Вкус батарейки и вишневой жвачки! Пульс уходит в космос, трамваи вокруг кажутся медленными кадрами.',
         reward: 30
       },
       {
@@ -281,13 +377,13 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'shock',
     mood: 'REC ● 03:12 // ВЫЕЗД ИЗ ДЕПО',
-    text: 'Ворота ангара сносит бронированный электробус с мигалками. Толпа бросается врассыпную. На шестой кассете Кира кричит сквозь сирену: «Они вычислили депо по треку! Уходи через грузовую рампу в ночной ТЦ "Галактика". Я спрятала там следующий фрагмент ключа, у нашего старого винилового ларька».',
+    text: 'Ворота ангара сносит бронированный электробус с мигалками. Толпа бросается врассыпную. На шестой кассете Кира кричит сквозь сирену: «Они вычислили депо по треку! Уходи через грузовую рампу в ТЦ "Галактика". Я спрятала там следующий фрагмент ключа, у нашего старого винилового ларька».',
     choices: [
       {
         label: 'Придержать аварийную дверь, пока мелкие альты выбегают из зала',
         effects: { empathy: 3, cynicism: 0, madness: 0 },
         replyEmotion: 'neutral',
-        reply: 'Плечо ноет от удара створкой, но десятки ребят успевают уйти в ночь. Хватаю дыхание и прыгаю на крышу вагона.',
+        reply: 'Плечо ноет от удара створкой, но десятки ребят успевают уйти. Хватаю дыхание и прыгаю на крышу вагона.',
         reward: 30
       },
       {
@@ -306,8 +402,7 @@ export const CASSETTES = [
       }
     ]
   },
-
-  // ================= ГЛАВА 3: НЕОНОВЫЙ ТЦ =================
+  // ГЛАВА 3
   {
     id: 'c3_1',
     chapter: 3,
@@ -316,7 +411,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'shock',
     mood: 'REC ● 03:38 // МОЛЛ',
-    text: 'Огромный трехэтажный ТЦ застыл в пастельном неоне. Из динамиков льется замедленный vaporwave, а пластиковые манекены в витринах синхронно поворачивают головы мне вслед. Кассета Киры лежит на подносе фудкорта: «Серый Эфир копирует здесь наши привычки, превращая стиль в бездушный мерч. Не верь витринам».',
+    text: 'Огромный трехэтажный ТЦ застыл в пастельном свете. Из динамиков льется замедленный vaporwave, а пластиковые манекены в витринах синхронно поворачивают головы мне вслед. Кассета Киры лежит на подносе фудкорта: «Серый Эфир копирует здесь наши привычки, превращая стиль в бездушный мерч. Не верь витринам».',
     choices: [
       {
         label: '«Кира права: стиль — это про душу и друзей, а не про алгоритмы»',
@@ -349,7 +444,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'neutral',
     mood: 'REC ● 03:56 // ЭТАЖ 2',
-    text: 'На втором этаже светится наш старый магазинчик «VOID_SHOP». Пожилой панк-продавец сидит за прилавком с мутным взглядом — Серый Эфир уже наполовину стер его память, он машинально складывает черные футболки в серые пакеты. Рядом крутится восьмая кассета.',
+    text: 'На втором этаже светится наш старый магазинчик «VOID_SHOP». Пожилой панк-продавец сидит за прилавком с мутным взглядом — Серый Эфир уже наполовину стер его память, он машинально складывает яркие футболки в серые пакеты. Рядом крутится восьмая кассета.',
     choices: [
       {
         label: 'Надеть на него свои наушники с живой записью Киры, чтобы вернуть память',
@@ -407,8 +502,7 @@ export const CASSETTES = [
       }
     ]
   },
-
-  // ================= ГЛАВА 4: ВЕТКА МЕТРО ПРИЗРАК =================
+  // ГЛАВА 4
   {
     id: 'c4_1',
     chapter: 4,
@@ -417,7 +511,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'neutral',
     mood: 'REC ● 04:33 // ГЛУБИНА -80М',
-    text: 'Холодный сквозняк несет запах сырого бетона и озона. По забытой ветке без остановок носятся поезда-призраки с пустыми вагонами и фиолетовыми экранами вместо окон. На десятой кассете голоса десятков пропавших бегунов — все они оставили здесь короткие записки тем, кто пойдет следом.',
+    text: 'Холодный сквозняк несет запах сырого бетона и озона. По забытой ветке без остановок носятся поезда-призраки с пустыми вагонами и светящимися окнами. На десятой кассете голоса десятков пропавших бегунов — все они оставили здесь короткие записки тем, кто пойдет следом.',
     choices: [
       {
         label: 'Записать поверх свой голос со словами поддержки для следующих',
@@ -483,7 +577,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'neutral',
     mood: 'REC ● 05:05 // УЗЕЛ БАШНИ',
-    text: 'Впереди технический подъем прямо в основание телебашни. У заблокированного вагона жмутся трое школьников в потертых кедах — они пытались догнать меня, но застряли перед лазерным барьером. Двенадцатая кассета мигает на пульте стрелочника.',
+    text: 'Впереди технический подъем прямо в основание телебашни. У заблокированного вагона жмутся трое школьников в потертых кедах — они пытались догнать меня, но застряли перед барьером. Двенадцатая кассета мигает на пульте стрелочника.',
     choices: [
       {
         label: 'Взломать щиток, выпустить ребят и показать им безопасный путь назад',
@@ -508,8 +602,7 @@ export const CASSETTES = [
       }
     ]
   },
-
-  // ================= ГЛАВА 5: КРЫША ТЕЛЕБАШНИ =================
+  // ГЛАВА 5
   {
     id: 'c5_1',
     chapter: 5,
@@ -518,7 +611,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'smirk',
     mood: 'REC ● 05:22 // ВЫСОТА 300М',
-    text: 'Я бегу по внешним техническим рельсам телебашни. Под ногами — океан кислотных огней ночного мегаполиса, над головой — шпиль, бьющий фиолетовыми молниями в тучи. Тринадцатая кассета дрожит от статики: «До вершины пара рывков, Алис. Весь город сейчас смотрит в черное небо и ждет, чем все кончится».',
+    text: 'Я бегу по внешним техническим рельсам телебашни. Под ногами — океан огней мегаполиса, над головой — розовый рассвет и шпиль, бьющий искрами в тучи. Тринадцатая кассета дрожит от статики: «До вершины пара рывков, Алис. Весь город сейчас смотрит вверх и ждет, чем все кончится».',
     choices: [
       {
         label: '«Они получат назад свои цвета и свой голос. Обещаю!»',
@@ -571,7 +664,7 @@ export const CASSETTES = [
         label: 'Выкрутить перегрузку резонатора и слить свой разум с антенной!',
         effects: { empathy: 0, cynicism: 0, madness: 4 },
         replyEmotion: 'psycho',
-        reply: 'Зачем чинить скучную реальность, если можно переписать мегаполис в бесконечный неоновый трип?',
+        reply: 'Зачем чинить скучную реальность, если можно переписать мегаполис в бесконечный комиксный трип?',
         reward: 60
       }
     ]
@@ -584,7 +677,7 @@ export const CASSETTES = [
     speaker: 'АЛИСА',
     emotion: 'smirk',
     mood: 'REC ● 05:57 // ПЕРЕДАТЧИК',
-    text: 'Последняя, пятнадцатая кассета встает в слот главного пульта на самой крыше телебашни. Небо на горизонте начинает светлеть. Перед финальным спринтом до рубильника система требует подтвердить протокол вещания.',
+    text: 'Последняя, пятнадцатая кассета встает в слот главного пульта на самой крыше телебашни. Небо на горизонте заливается золотом и сиренью. Перед финальным спринтом до рубильника система требует подтвердить протокол вещания.',
     choices: [
       {
         label: '[ПРОТОКОЛ: АНДЕГРАУНД] — Запустить волну свободы и вытащить Киру',
@@ -601,7 +694,7 @@ export const CASSETTES = [
         reward: 80
       },
       {
-        label: '[ПРОТОКОЛ: ВОЗНЕСЕНИЕ] — Раствориться в неоне вместе с сигналом',
+        label: '[ПРОТОКОЛ: ВОЗНЕСЕНИЕ] — Раствориться в эфире вместе с сигналом',
         effects: { empathy: 0, cynicism: 0, madness: 4 },
         replyEmotion: 'psycho',
         reply: 'Снимаю ограничитель мощности. Тело больше не нужно — увидимся на всех экранах этого города!',
@@ -619,7 +712,7 @@ export const ENDINGS = [
     emotion: 'smirk',
     summary: 'Собраны все 15 кассет и победила эмпатия. Город проснулся, а Кира вернулась.',
     description:
-      'Пятнадцать кассет сложились в единый резонансный трек. Серый Эфир рассыпался розовыми искрами над рассветным мегаполисом, освободив сознание Киры и тысяч уснувших горожан. В депо снова ревут сабвуферы, на панельках цветут свежие граффити, а твое имя передают шепотом как символ живого ночного андеграунда.'
+      'Пятнадцать кассет сложились в единый резонансный трек. Серый Эфир рассыпался розовыми искрами над рассветным мегаполисом, освободив сознание Киры и тысяч уснувших горожан. В депо снова ревут сабвуферы, на панельках цветут свежие граффити, а твое имя передают шепотом как символ живого андеграунда.'
   },
   {
     id: 'ghost',
@@ -628,7 +721,7 @@ export const ENDINGS = [
     emotion: 'psycho',
     summary: 'Лидирует безумие — передоз энергетиками и глитч-выборы стерли границу с сетью.',
     description:
-      'На пике скорости таурин, озон и частота телебашни слились воедино. Тело осталось на крыше, а ты шагнула прямо в оптоволокно. Теперь тебя видят в отражениях ночных витрин, слышат в помехах старых кассетников и зовут по имени на заброшенных рейвах. Ты стала бессмертной легендой кибер-эфира.'
+      'На пике скорости таурин, озон и частота телебашни слились воедино. Тело осталось на крыше, а ты шагнула прямо в оптоволокно. Теперь тебя видят в отражениях витрин, слышат в помехах старых кассетников и зовут по имени на заброшенных рейвах.'
   },
   {
     id: 'wolf',
@@ -637,7 +730,7 @@ export const ENDINGS = [
     emotion: 'neutral',
     summary: 'Лидирует цинизм. Передатчик уничтожен, но ты ушла из города в одиночку.',
     description:
-      'Главный рубильник взорвался снопом фиолетовых искр, навсегда обрубив Серый Эфир — вместе со всеми иллюзиями о спасении общества. Не дожидаясь аплодисментов и благодарностей, ты спустилась по товарным путям, накинула капюшон и исчезла за границей кольцевой. Свобода стоит дорого, но ты заплатила за нее сама.'
+      'Главный рубильник взорвался снопом фиолетовых искр, навсегда обрубив Серый Эфир — вместе со всеми иллюзиями о спасении общества. Не дожидаясь аплодисментов, ты спустилась по товарным путям, накинула капюшон и исчезла за границей кольцевой.'
   },
   {
     id: 'skuf',
@@ -646,7 +739,7 @@ export const ENDINGS = [
     emotion: 'shock',
     summary: 'Не хватило решимости или кассет — Серый Эфир победил и стер все краски.',
     description:
-      'На вершине башни плеер зажевал ленту, а в твоем сердце не нашлось достаточно огня, чтобы перекричать помехи. На следующее утро ты проснулась в идеально тихой панельке, аккуратно сложила чокер в дальний ящик, надела бежевую куртку и пошла на утренний автобус. Неоновый город остался лишь смутным сном из юности.'
+      'На вершине башни плеер зажевал ленту, а в твоем сердце не нашлось достаточно огня, чтобы перекричать помехи. На следующее утро ты проснулась в идеально тихой панельке, аккуратно сложила чокер в дальний ящик, надела бежевую куртку и пошла на утренний автобус.'
   }
 ];
 
@@ -669,8 +762,13 @@ function createDefaultState() {
     upgrades: {
       energy: 1,
       choker: 1,
-      tamagotchi: 1
+      tamagotchi: 1,
+      boots: 0,
+      magnet: 0,
+      multiplier: 0
     },
+    ownedSkins: ['classic'],
+    equippedSkin: 'classic',
     karma: {
       empathy: 0,
       cynicism: 0,
@@ -681,11 +779,6 @@ function createDefaultState() {
   };
 }
 
-/**
- * Генерирует компактную SVG-строку стилизованного аниме/комикс портрета Альтушки.
- * @param {'neutral'|'smirk'|'shock'|'psycho'} emotion
- * @returns {string}
- */
 export function getPortraitSVG(emotion = 'neutral') {
   const mood = ['neutral', 'smirk', 'shock', 'psycho'].includes(emotion)
     ? emotion
@@ -698,168 +791,110 @@ export function getPortraitSVG(emotion = 'neutral') {
   let fx = '';
 
   if (mood === 'neutral') {
-    aura = '<circle cx="110" cy="112" r="84" fill="none" stroke="#9d4edd" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.55"/>';
+    aura = '<circle cx="110" cy="112" r="84" fill="#ffe6f2" stroke="#14101f" stroke-width="3"/>';
     brows = `
-      <path d="M74 96 Q86 92 98 97" fill="none" stroke="#120c18" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M122 97 Q134 92 146 96" fill="none" stroke="#120c18" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M74 96 Q86 92 98 97" fill="none" stroke="#14101f" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M122 97 Q134 92 146 96" fill="none" stroke="#14101f" stroke-width="3.2" stroke-linecap="round"/>
     `;
     eyes = `
-      <path d="M73 108 Q86 101 99 109 Q86 117 73 108 Z" fill="#fff7fc"/>
-      <path d="M121 109 Q134 101 147 108 Q134 117 121 109 Z" fill="#fff7fc"/>
-      <circle cx="87" cy="109" r="6.2" fill="#9d4edd"/>
-      <circle cx="133" cy="109" r="6.2" fill="#ff2a85"/>
-      <circle cx="87" cy="110" r="3.1" fill="#09090b"/>
-      <circle cx="133" cy="110" r="3.1" fill="#09090b"/>
-      <circle cx="84.5" cy="106.5" r="2" fill="#ffffff"/>
-      <circle cx="130.5" cy="106.5" r="2" fill="#ffffff"/>
-      <path d="M68 106 Q86 98 100 107" fill="none" stroke="#09090b" stroke-width="4" stroke-linecap="round"/>
-      <path d="M120 107 Q134 98 152 106" fill="none" stroke="#09090b" stroke-width="4" stroke-linecap="round"/>
-      <path d="M68 106 L62 103 M152 106 L158 103" stroke="#09090b" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M73 108 Q86 101 99 109 Q86 117 73 108 Z" fill="#ffffff"/>
+      <path d="M121 109 Q134 101 147 108 Q134 117 121 109 Z" fill="#ffffff"/>
+      <circle cx="87" cy="109" r="6.2" fill="#7c4dff"/>
+      <circle cx="133" cy="109" r="6.2" fill="#ff3b8d"/>
+      <circle cx="87" cy="110" r="3.1" fill="#14101f"/>
+      <circle cx="133" cy="110" r="3.1" fill="#14101f"/>
+      <circle cx="84.5" cy="106.5" r="2.2" fill="#ffffff"/>
+      <circle cx="130.5" cy="106.5" r="2.2" fill="#ffffff"/>
+      <path d="M68 106 Q86 98 100 107" fill="none" stroke="#14101f" stroke-width="4" stroke-linecap="round"/>
+      <path d="M120 107 Q134 98 152 106" fill="none" stroke="#14101f" stroke-width="4" stroke-linecap="round"/>
     `;
-    mouth = '<path d="M101 136 Q110 138 119 135" fill="none" stroke="#421d38" stroke-width="2.6" stroke-linecap="round"/>';
+    mouth = '<path d="M101 136 Q110 139 119 135" fill="none" stroke="#421d38" stroke-width="2.6" stroke-linecap="round"/>';
   } else if (mood === 'smirk') {
-    aura = '<circle cx="110" cy="112" r="86" fill="none" stroke="#ff2a85" stroke-width="2" stroke-dasharray="10 4" opacity="0.7"/>';
+    aura = '<circle cx="110" cy="112" r="84" fill="#fff3bf" stroke="#14101f" stroke-width="3"/>';
     brows = `
-      <path d="M73 98 Q86 93 99 99" fill="none" stroke="#120c18" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M121 95 Q134 86 147 93" fill="none" stroke="#120c18" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M73 98 Q86 93 99 99" fill="none" stroke="#14101f" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M121 95 Q134 86 147 93" fill="none" stroke="#14101f" stroke-width="3.2" stroke-linecap="round"/>
     `;
     eyes = `
-      <path d="M74 109 Q86 103 99 109 Q86 116 74 109 Z" fill="#fff7fc"/>
-      <path d="M121 109 Q134 103 146 109 Q134 116 121 109 Z" fill="#fff7fc"/>
-      <circle cx="88" cy="109" r="5.8" fill="#ff2a85"/>
-      <circle cx="134" cy="109" r="5.8" fill="#9d4edd"/>
-      <circle cx="88.5" cy="109.5" r="2.9" fill="#09090b"/>
-      <circle cx="134.5" cy="109.5" r="2.9" fill="#09090b"/>
-      <circle cx="85" cy="106.5" r="2.1" fill="#ffffff"/>
-      <circle cx="131" cy="106.5" r="2.1" fill="#ffffff"/>
-      <path d="M68 105 Q86 99 100 108" fill="none" stroke="#09090b" stroke-width="4.2" stroke-linecap="round"/>
-      <path d="M120 108 Q134 99 152 105" fill="none" stroke="#09090b" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M74 109 Q86 103 99 109 Q86 116 74 109 Z" fill="#ffffff"/>
+      <path d="M121 109 Q134 103 146 109 Q134 116 121 109 Z" fill="#ffffff"/>
+      <circle cx="88" cy="109" r="5.8" fill="#ff3b8d"/>
+      <circle cx="134" cy="109" r="5.8" fill="#7c4dff"/>
+      <circle cx="88.5" cy="109.5" r="2.9" fill="#14101f"/>
+      <circle cx="134.5" cy="109.5" r="2.9" fill="#14101f"/>
+      <circle cx="85" cy="106.5" r="2.2" fill="#ffffff"/>
+      <circle cx="131" cy="106.5" r="2.2" fill="#ffffff"/>
+      <path d="M68 105 Q86 99 100 108" fill="none" stroke="#14101f" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M120 108 Q134 99 152 105" fill="none" stroke="#14101f" stroke-width="4.2" stroke-linecap="round"/>
     `;
     mouth = `
-      <path d="M97 135 Q111 143 125 131" fill="none" stroke="#36132d" stroke-width="2.8" stroke-linecap="round"/>
+      <path d="M97 135 Q111 143 125 131" fill="none" stroke="#14101f" stroke-width="2.8" stroke-linecap="round"/>
       <polygon points="118,135 121,140 123,133" fill="#ffffff"/>
     `;
-    fx = `
-      <path d="M168 62 L171 71 L180 74 L171 77 L168 86 L165 77 L156 74 L165 71 Z" fill="#ff99c8"/>
-      <path d="M48 76 L50 81 L55 83 L50 85 L48 90 L46 85 L41 83 L46 81 Z" fill="#e0aaff"/>
-    `;
+    fx = '<path d="M168 62 L171 71 L180 74 L171 77 L168 86 L165 77 L156 74 L165 71 Z" fill="#ff3b8d" stroke="#14101f" stroke-width="1.5"/>';
   } else if (mood === 'shock') {
-    aura = '<circle cx="110" cy="112" r="88" fill="none" stroke="#56cfe1" stroke-width="2" stroke-dasharray="4 5" opacity="0.75"/>';
+    aura = '<circle cx="110" cy="112" r="84" fill="#d0ebff" stroke="#14101f" stroke-width="3"/>';
     brows = `
-      <path d="M74 90 Q86 81 98 89" fill="none" stroke="#120c18" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M122 89 Q134 81 146 90" fill="none" stroke="#120c18" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M74 90 Q86 81 98 89" fill="none" stroke="#14101f" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M122 89 Q134 81 146 90" fill="none" stroke="#14101f" stroke-width="3.2" stroke-linecap="round"/>
     `;
     eyes = `
-      <ellipse cx="86" cy="109" rx="12" ry="11" fill="#ffffff" stroke="#09090b" stroke-width="3.2"/>
-      <ellipse cx="134" cy="109" rx="12" ry="11" fill="#ffffff" stroke="#09090b" stroke-width="3.2"/>
-      <circle cx="86" cy="110" r="4.6" fill="#9d4edd"/>
-      <circle cx="134" cy="110" r="4.6" fill="#ff2a85"/>
-      <circle cx="86" cy="110" r="2.2" fill="#09090b"/>
-      <circle cx="134" cy="110" r="2.2" fill="#09090b"/>
+      <ellipse cx="86" cy="109" rx="12" ry="11" fill="#ffffff" stroke="#14101f" stroke-width="3.2"/>
+      <ellipse cx="134" cy="109" rx="12" ry="11" fill="#ffffff" stroke="#14101f" stroke-width="3.2"/>
+      <circle cx="86" cy="110" r="4.6" fill="#7c4dff"/>
+      <circle cx="134" cy="110" r="4.6" fill="#ff3b8d"/>
+      <circle cx="86" cy="110" r="2.2" fill="#14101f"/>
+      <circle cx="134" cy="110" r="2.2" fill="#14101f"/>
       <circle cx="83" cy="106" r="2" fill="#ffffff"/>
       <circle cx="131" cy="106" r="2" fill="#ffffff"/>
     `;
     mouth = `
-      <ellipse cx="110" cy="138" rx="7.5" ry="9" fill="#3a0d2a" stroke="#09090b" stroke-width="2.4"/>
+      <ellipse cx="110" cy="138" rx="7.5" ry="9" fill="#3a0d2a" stroke="#14101f" stroke-width="2.4"/>
       <ellipse cx="110" cy="142" rx="4.5" ry="3.2" fill="#ff5ca8"/>
     `;
-    fx = `
-      <path d="M158 84 Q165 96 158 103 Q151 96 158 84 Z" fill="#56cfe1" stroke="#09090b" stroke-width="1.5"/>
-      <path d="M40 54 L56 64 M180 54 L164 64 M34 94 L50 96 M186 94 L170 96" stroke="#ff99c8" stroke-width="2.5" stroke-linecap="round"/>
-    `;
+    fx = '<path d="M158 84 Q165 96 158 103 Q151 96 158 84 Z" fill="#3bc9db" stroke="#14101f" stroke-width="2"/>';
   } else {
-    // psycho
-    aura = `
-      <circle cx="110" cy="112" r="88" fill="none" stroke="#ff2a85" stroke-width="2.5" opacity="0.85"/>
-      <polygon points="110,16 122,36 146,28 144,52 170,56 154,76 176,94 156,110 172,130 148,136 152,162 128,154 110,174 92,154 68,162 72,136 48,130 64,110 44,94 66,76 50,56 76,52 74,28 98,36" fill="none" stroke="#ff2a85" stroke-width="1.4" opacity="0.45"/>
-    `;
+    aura = '<circle cx="110" cy="112" r="84" fill="#ffc9e0" stroke="#14101f" stroke-width="3"/>';
     brows = `
-      <path d="M72 90 L100 101" fill="none" stroke="#09090b" stroke-width="3.6" stroke-linecap="round"/>
-      <path d="M148 90 L120 101" fill="none" stroke="#09090b" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M72 90 L100 101" fill="none" stroke="#14101f" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M148 90 L120 101" fill="none" stroke="#14101f" stroke-width="3.6" stroke-linecap="round"/>
     `;
     eyes = `
-      <ellipse cx="86" cy="110" rx="12.5" ry="11.5" fill="#180821" stroke="#ff2a85" stroke-width="2.6"/>
-      <ellipse cx="134" cy="110" rx="12.5" ry="11.5" fill="#180821" stroke="#56cfe1" stroke-width="2.6"/>
-      <circle cx="86" cy="110" r="8.2" fill="none" stroke="#ff2a85" stroke-width="2"/>
-      <circle cx="134" cy="110" r="8.2" fill="none" stroke="#ff2a85" stroke-width="2"/>
-      <circle cx="86" cy="110" r="4.4" fill="none" stroke="#e0aaff" stroke-width="1.8"/>
-      <circle cx="134" cy="110" r="4.4" fill="none" stroke="#e0aaff" stroke-width="1.8"/>
-      <circle cx="86" cy="110" r="2" fill="#ffffff"/>
-      <circle cx="134" cy="110" r="2" fill="#ffffff"/>
-      <path d="M74 123 Q86 127 97 122 M123 122 Q134 127 146 123" fill="none" stroke="#9d4edd" stroke-width="2" opacity="0.8"/>
+      <ellipse cx="86" cy="110" rx="12.5" ry="11.5" fill="#180821" stroke="#ff3b8d" stroke-width="2.6"/>
+      <ellipse cx="134" cy="110" rx="12.5" ry="11.5" fill="#180821" stroke="#3bc9db" stroke-width="2.6"/>
+      <circle cx="86" cy="110" r="8.2" fill="none" stroke="#ff3b8d" stroke-width="2"/>
+      <circle cx="134" cy="110" r="8.2" fill="none" stroke="#ff3b8d" stroke-width="2"/>
+      <circle cx="86" cy="110" r="2.4" fill="#ffffff"/>
+      <circle cx="134" cy="110" r="2.4" fill="#ffffff"/>
     `;
     mouth = `
-      <path d="M90 132 Q110 152 130 132 Q110 136 90 132 Z" fill="#ffffff" stroke="#09090b" stroke-width="2.5"/>
-      <path d="M98 134 L98 141 M106 135 L106 143 M114 135 L114 143 M122 134 L122 141" stroke="#09090b" stroke-width="1.6"/>
+      <path d="M90 132 Q110 152 130 132 Q110 136 90 132 Z" fill="#ffffff" stroke="#14101f" stroke-width="2.5"/>
+      <path d="M98 134 L98 141 M106 135 L106 143 M114 135 L114 143 M122 134 L122 141" stroke="#14101f" stroke-width="1.6"/>
     `;
-    fx = `
-      <path d="M36 68 L50 76 L42 86 L56 96" fill="none" stroke="#ff2a85" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M184 68 L170 76 L178 86 L164 96" fill="none" stroke="#56cfe1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="44" y="138" width="22" height="3" fill="#ff2a85" opacity="0.8"/>
-      <rect x="156" y="128" width="26" height="3" fill="#56cfe1" opacity="0.8"/>
-    `;
+    fx = '<path d="M36 68 L50 76 L42 86 L56 96" fill="none" stroke="#ff3b8d" stroke-width="3.5" stroke-linecap="round"/>';
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="Портрет Алисы (${mood})">
-    <defs>
-      <radialGradient id="altGlow_${mood}" cx="50%" cy="48%" r="50%">
-        <stop offset="0%" stop-color="#ff2a85" stop-opacity="0.34"/>
-        <stop offset="65%" stop-color="#9d4edd" stop-opacity="0.14"/>
-        <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="altHoodie_${mood}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#1c1427"/>
-        <stop offset="100%" stop-color="#0b0910"/>
-      </linearGradient>
-    </defs>
-
-    <circle cx="110" cy="112" r="96" fill="url(#altGlow_${mood})"/>
     ${aura}
-
-    <!-- Задний слой двухцветных волос + пучки -->
-    <circle cx="56" cy="54" r="23" fill="#14101c" stroke="#09090b" stroke-width="3"/>
-    <circle cx="164" cy="54" r="23" fill="#14101c" stroke="#09090b" stroke-width="3"/>
-    <path d="M46 46 Q56 36 68 48" fill="none" stroke="#9d4edd" stroke-width="4" stroke-linecap="round"/>
-    <path d="M152 48 Q164 36 174 46" fill="none" stroke="#ff2a85" stroke-width="4" stroke-linecap="round"/>
-
-    <path d="M46 84 C36 124 40 164 56 190 L92 178 L110 176 L128 178 L164 190 C180 164 184 124 174 84 C166 44 142 30 110 30 C78 30 54 44 46 84 Z" fill="#14101c" stroke="#09090b" stroke-width="3"/>
-    <!-- Неоновые пряди -->
-    <path d="M51 114 C46 144 50 170 62 188 L78 180 C68 158 66 134 69 112 Z" fill="#9d4edd"/>
-    <path d="M169 114 C174 144 170 170 158 188 L142 180 C152 158 154 134 151 112 Z" fill="#ff2a85"/>
-
-    <!-- Плечи и худи -->
-    <path d="M42 220 C48 184 72 170 96 168 L124 168 C148 170 172 184 178 220 Z" fill="url(#altHoodie_${mood})" stroke="#09090b" stroke-width="3"/>
-    <path d="M84 171 L110 198 L136 171" fill="none" stroke="#ff2a85" stroke-width="2.5" opacity="0.85"/>
-    <path d="M98 186 L98 220 M122 186 L122 220" stroke="#e0aaff" stroke-width="2" stroke-dasharray="4 3" opacity="0.55"/>
-
-    <!-- Шея и чокер с шипами + кольцом -->
-    <rect x="97" y="148" width="26" height="28" rx="8" fill="#ebd6e4" stroke="#09090b" stroke-width="2.5"/>
-    <path d="M97 154 Q110 163 123 154 L123 162 Q110 170 97 162 Z" fill="#d5b6cc"/>
-    <rect x="93" y="159" width="34" height="10" rx="3" fill="#0d0a12" stroke="#ff2a85" stroke-width="1.4"/>
-    <polygon points="97,159 100,153 103,159" fill="#e0aaff"/>
-    <polygon points="117,159 120,153 123,159" fill="#e0aaff"/>
-    <circle cx="110" cy="171" r="5.5" fill="none" stroke="#e0aaff" stroke-width="2.4"/>
-
-    <!-- Лицо -->
-    <path d="M67 88 C67 60 86 48 110 48 C134 48 153 60 153 88 C153 122 137 148 110 156 C83 148 67 122 67 88 Z" fill="#f7e7f2" stroke="#09090b" stroke-width="3"/>
-    <!-- Легкий румянец -->
-    <ellipse cx="78" cy="122" rx="9" ry="4.2" fill="#ff5ca8" opacity="0.28"/>
-    <ellipse cx="142" cy="122" rx="9" ry="4.2" fill="#ff5ca8" opacity="0.28"/>
-    <!-- Нос -->
-    <path d="M109 119 L111 124 L108 125" fill="none" stroke="#b995b0" stroke-width="1.9" stroke-linecap="round"/>
-
+    <circle cx="56" cy="54" r="23" fill="#1d1629" stroke="#14101f" stroke-width="3.5"/>
+    <circle cx="164" cy="54" r="23" fill="#1d1629" stroke="#14101f" stroke-width="3.5"/>
+    <path d="M46 84 C36 124 40 164 56 190 L110 176 L164 190 C180 164 184 124 174 84 C166 44 142 30 110 30 C78 30 54 44 46 84 Z" fill="#1d1629" stroke="#14101f" stroke-width="3.5"/>
+    <path d="M51 114 C46 144 50 170 62 188 L78 180 C68 158 66 134 69 112 Z" fill="#9775fa"/>
+    <path d="M169 114 C174 144 170 170 158 188 L142 180 C152 158 154 134 151 112 Z" fill="#ff3b8d"/>
+    <path d="M42 220 C48 184 72 170 96 168 L124 168 C148 170 172 184 178 220 Z" fill="#282038" stroke="#14101f" stroke-width="3.5"/>
+    <rect x="97" y="148" width="26" height="28" rx="8" fill="#ffe0e8" stroke="#14101f" stroke-width="2.8"/>
+    <rect x="93" y="159" width="34" height="10" rx="3" fill="#14101f"/>
+    <circle cx="110" cy="171" r="5.5" fill="none" stroke="#ffd43b" stroke-width="2.6"/>
+    <path d="M67 88 C67 60 86 48 110 48 C134 48 153 60 153 88 C153 122 137 148 110 156 C83 148 67 122 67 88 Z" fill="#fff0f4" stroke="#14101f" stroke-width="3.5"/>
+    <ellipse cx="78" cy="122" rx="9" ry="4.5" fill="#ff7eb6" opacity="0.45"/>
+    <ellipse cx="142" cy="122" rx="9" ry="4.5" fill="#ff7eb6" opacity="0.45"/>
     ${brows}
     ${eyes}
     ${mouth}
-
-    <!-- Рваная челка + неоновые заколки -->
-    <path d="M62 88 C62 52 84 36 110 36 C136 36 158 52 158 88 L150 96 L142 74 L132 95 L122 68 L112 96 L101 69 L90 95 L79 74 L70 96 Z" fill="#14101c" stroke="#09090b" stroke-width="2.8" stroke-linejoin="round"/>
-    <path d="M124 67 L132 93 L140 73 Z" fill="#ff2a85" opacity="0.9"/>
-    <path d="M79 73 L89 93 L98 69 Z" fill="#9d4edd" opacity="0.85"/>
-    <!-- Заколка крест-накрест -->
-    <path d="M72 64 L84 74 M84 64 L72 74" stroke="#ff99c8" stroke-width="3" stroke-linecap="round"/>
-    <path d="M140 62 L150 70" stroke="#56cfe1" stroke-width="3" stroke-linecap="round"/>
-
+    <path d="M62 88 C62 52 84 36 110 36 C136 36 158 52 158 88 L150 96 L142 74 L132 95 L122 68 L112 96 L101 69 L90 95 L79 74 L70 96 Z" fill="#1d1629" stroke="#14101f" stroke-width="3.2" stroke-linejoin="round"/>
+    <path d="M124 67 L132 93 L140 73 Z" fill="#ff3b8d"/>
+    <path d="M79 73 L89 93 L98 69 Z" fill="#9775fa"/>
+    <path d="M72 64 L84 74 M84 64 L72 74" stroke="#ffd43b" stroke-width="3.2" stroke-linecap="round"/>
     ${fx}
   </svg>`;
 }
@@ -871,49 +906,17 @@ export class StorySystem {
     this.load();
   }
 
-  get currency() {
-    return this.state.currency;
-  }
-
-  set currency(value) {
-    this.state.currency = Math.max(0, Math.floor(Number(value) || 0));
-  }
-
-  get totalDistance() {
-    return this.state.totalDistance;
-  }
-
-  get bestDistance() {
-    return this.state.bestDistance;
-  }
-
-  get currentChapter() {
-    return this.state.currentChapter;
-  }
-
-  get unlockedChapter() {
-    return this.state.unlockedChapter;
-  }
-
-  get chapterDistance() {
-    return this.state.chapterDistances[this.state.currentChapter] || 0;
-  }
-
-  get collectedCassettes() {
-    return this.state.collectedCassettes;
-  }
-
-  get upgrades() {
-    return this.state.upgrades;
-  }
-
-  get karma() {
-    return this.state.karma;
-  }
-
-  get unlockedEndings() {
-    return this.state.unlockedEndings;
-  }
+  get currency() { return this.state.currency; }
+  set currency(value) { this.state.currency = Math.max(0, Math.floor(Number(value) || 0)); }
+  get totalDistance() { return this.state.totalDistance; }
+  get bestDistance() { return this.state.bestDistance; }
+  get currentChapter() { return this.state.currentChapter; }
+  get unlockedChapter() { return this.state.unlockedChapter; }
+  get chapterDistance() { return this.state.chapterDistances[this.state.currentChapter] || 0; }
+  get collectedCassettes() { return this.state.collectedCassettes; }
+  get upgrades() { return this.state.upgrades; }
+  get karma() { return this.state.karma; }
+  get unlockedEndings() { return this.state.unlockedEndings; }
 
   load() {
     const defaults = createDefaultState();
@@ -924,19 +927,18 @@ export class StorySystem {
         return this.state;
       }
       const parsed = JSON.parse(raw);
-      const mergedDistances = {
-        ...defaults.chapterDistances,
-        ...(parsed.chapterDistances || {})
-      };
+      const mergedDistances = { ...defaults.chapterDistances, ...(parsed.chapterDistances || {}) };
       const currentChapter = Math.min(5, Math.max(1, Number(parsed.currentChapter) || 1));
-      const unlockedChapter = Math.min(
-        5,
-        Math.max(currentChapter, Number(parsed.unlockedChapter) || 1)
-      );
+      const unlockedChapter = Math.min(5, Math.max(currentChapter, Number(parsed.unlockedChapter) || 1));
 
       if (typeof parsed.chapterDistance === 'number' && !parsed.chapterDistances) {
         mergedDistances[currentChapter] = Math.max(0, Math.floor(parsed.chapterDistance));
       }
+
+      const ownedSkins = Array.isArray(parsed.ownedSkins)
+        ? [...new Set(['classic', ...parsed.ownedSkins.filter((id) => SKINS.some((s) => s.id === id))])]
+        : ['classic'];
+      const equippedSkin = ownedSkins.includes(parsed.equippedSkin) ? parsed.equippedSkin : 'classic';
 
       this.state = {
         currency: Math.max(0, Math.floor(Number(parsed.currency) || 0)),
@@ -952,11 +954,13 @@ export class StorySystem {
         upgrades: {
           energy: Math.min(MAX_UPGRADE_LEVEL, Math.max(1, Number(parsed.upgrades?.energy) || 1)),
           choker: Math.min(MAX_UPGRADE_LEVEL, Math.max(1, Number(parsed.upgrades?.choker) || 1)),
-          tamagotchi: Math.min(
-            MAX_UPGRADE_LEVEL,
-            Math.max(1, Number(parsed.upgrades?.tamagotchi) || 1)
-          )
+          tamagotchi: Math.min(MAX_UPGRADE_LEVEL, Math.max(1, Number(parsed.upgrades?.tamagotchi) || 1)),
+          boots: Math.min(MAX_UPGRADE_LEVEL, Math.max(0, Number(parsed.upgrades?.boots) || 0)),
+          magnet: Math.min(MAX_UPGRADE_LEVEL, Math.max(0, Number(parsed.upgrades?.magnet) || 0)),
+          multiplier: Math.min(MAX_UPGRADE_LEVEL, Math.max(0, Number(parsed.upgrades?.multiplier) || 0))
         },
+        ownedSkins,
+        equippedSkin,
         karma: {
           empathy: Number(parsed.karma?.empathy) || 0,
           cynicism: Number(parsed.karma?.cynicism) || 0,
@@ -978,14 +982,8 @@ export class StorySystem {
     try {
       window.localStorage.setItem(this.storageKey, JSON.stringify(this.state));
     } catch {
-      // Игнорируем переполнение или приватный режим хранилища
+      // Игнорируем ограничения приватного режима
     }
-  }
-
-  resetSave() {
-    this.state = createDefaultState();
-    this.save();
-    return this.state;
   }
 
   getChapterConfig(chapterId = this.state.currentChapter) {
@@ -994,9 +992,7 @@ export class StorySystem {
 
   selectChapter(chapterId) {
     const id = Number(chapterId);
-    if (id < 1 || id > CHAPTERS.length || id > this.state.unlockedChapter) {
-      return false;
-    }
+    if (id < 1 || id > CHAPTERS.length || id > this.state.unlockedChapter) return false;
     this.state.currentChapter = id;
     this.state.chapterDistance = this.state.chapterDistances[id] || 0;
     this.save();
@@ -1009,10 +1005,6 @@ export class StorySystem {
 
   getCassetteById(cassetteId) {
     return CASSETTES.find((c) => c.id === cassetteId) || null;
-  }
-
-  isCassetteCollected(cassetteId) {
-    return this.state.collectedCassettes.includes(cassetteId);
   }
 
   getCollectedCassettesInChapter(chapterId = this.state.currentChapter) {
@@ -1030,10 +1022,7 @@ export class StorySystem {
   }
 
   getNextCassetteSpawnInterval() {
-    return (
-      CASSETTE_SPAWN_MIN +
-      Math.floor(Math.random() * (CASSETTE_SPAWN_MAX - CASSETTE_SPAWN_MIN + 1))
-    );
+    return CASSETTE_SPAWN_MIN + Math.floor(Math.random() * (CASSETTE_SPAWN_MAX - CASSETTE_SPAWN_MIN + 1));
   }
 
   getChapterProgress(chapterId = this.state.currentChapter) {
@@ -1041,19 +1030,16 @@ export class StorySystem {
     const distance = this.state.chapterDistances[cfg.id] || 0;
     const collected = this.getCollectedCassettesInChapter(cfg.id).length;
     const total = cfg.cassetteIds.length;
-    const distanceRatio = Math.min(1, distance / cfg.targetDistance);
-    const completed = distance >= cfg.targetDistance && collected >= total;
-
     return {
       chapterId: cfg.id,
       title: cfg.title,
       subtitle: cfg.subtitle,
       distance,
       targetDistance: cfg.targetDistance,
-      distanceRatio,
+      distanceRatio: Math.min(1, distance / cfg.targetDistance),
       cassettesCollected: collected,
       cassettesTotal: total,
-      completed
+      completed: distance >= cfg.targetDistance && collected >= total
     };
   }
 
@@ -1061,18 +1047,6 @@ export class StorySystem {
     return this.getChapterProgress(chapterId).completed;
   }
 
-  addCurrency(amount) {
-    const delta = Math.floor(Number(amount) || 0);
-    if (delta === 0) return this.state.currency;
-    this.state.currency = Math.max(0, this.state.currency + delta);
-    this.save();
-    return this.state.currency;
-  }
-
-  /**
-   * Регистрирует подбор энергетика в забеге.
-   * Злоупотребление энергетиками сдвигает карму в сторону безумия (для ветки «Цифровой призрак»).
-   */
   recordEnergyDrink() {
     this.state.energyDrinksUsed += 1;
     if (this.state.energyDrinksUsed % 3 === 0) {
@@ -1081,13 +1055,9 @@ export class StorySystem {
     this.save();
   }
 
-  /**
-   * Применяет выбор игрока из визуальной новеллы и помечает кассету как собранную.
-   */
   applyCassetteChoice(cassetteId, choiceIndex) {
     const cassette = this.getCassetteById(cassetteId);
     if (!cassette) return null;
-
     const choice = cassette.choices[choiceIndex] || cassette.choices[0];
     const isNew = !this.state.collectedCassettes.includes(cassette.id);
 
@@ -1097,9 +1067,7 @@ export class StorySystem {
       this.state.karma.empathy += Number(eff.empathy) || 0;
       this.state.karma.cynicism += Number(eff.cynicism) || 0;
       this.state.karma.madness += Number(eff.madness) || 0;
-      if (choice.reward) {
-        this.state.currency += choice.reward;
-      }
+      if (choice.reward) this.state.currency += choice.reward;
     }
 
     const progression = this.checkChapterProgression();
@@ -1116,18 +1084,13 @@ export class StorySystem {
     };
   }
 
-  /**
-   * Фиксирует итоги забега: дистанцию, собранные медиаторы и прогресс текущей главы.
-   */
   recordRun(distanceMeters, collectedMediators = 0) {
     const dist = Math.max(0, Math.floor(Number(distanceMeters) || 0));
     const meds = Math.max(0, Math.floor(Number(collectedMediators) || 0));
     const ch = this.state.currentChapter;
 
     this.state.totalDistance += dist;
-    if (dist > this.state.bestDistance) {
-      this.state.bestDistance = dist;
-    }
+    if (dist > this.state.bestDistance) this.state.bestDistance = dist;
     this.state.currency += meds;
     this.state.chapterDistances[ch] = (this.state.chapterDistances[ch] || 0) + dist;
     this.state.chapterDistance = this.state.chapterDistances[ch];
@@ -1159,17 +1122,25 @@ export class StorySystem {
         finaleEnding = this.evaluateEnding();
       }
     }
+    return { chapterCompleted: progress.completed, unlockedNextChapter, finaleEnding };
+  }
 
-    return {
-      chapterCompleted: progress.completed,
-      unlockedNextChapter,
-      finaleEnding
-    };
+  // ---- АПГРЕЙДЫ И НОВЫЕ ДОПОЛНЕНИЯ ----
+  getAllUpgrades() {
+    return Object.values(UPGRADE_CONFIG).map((cfg) => ({
+      ...cfg,
+      level: this.getUpgradeLevel(cfg.key),
+      cost: this.getUpgradeCost(cfg.key),
+      affordable: this.canAffordUpgrade(cfg.key)
+    }));
   }
 
   getUpgradeLevel(rawKey) {
     const key = normalizeUpgradeKey(rawKey);
-    return this.state.upgrades[key] || 1;
+    const cfg = UPGRADE_CONFIG[key];
+    if (!cfg) return 0;
+    const val = this.state.upgrades[key];
+    return typeof val === 'number' ? val : cfg.minLevel;
   }
 
   getUpgradeCost(rawKey) {
@@ -1178,7 +1149,8 @@ export class StorySystem {
     if (!cfg) return null;
     const level = this.getUpgradeLevel(key);
     if (level >= MAX_UPGRADE_LEVEL) return null;
-    return Math.round((cfg.baseCost * Math.pow(cfg.costGrowth, level - 1)) / 5) * 5;
+    const step = level - cfg.minLevel;
+    return Math.round((cfg.baseCost * Math.pow(cfg.costGrowth, step)) / 5) * 5;
   }
 
   getUpgradeEffect(rawKey) {
@@ -1186,6 +1158,30 @@ export class StorySystem {
     const cfg = UPGRADE_CONFIG[key];
     if (!cfg) return null;
     const level = this.getUpgradeLevel(key);
+
+    if (key === 'boots') {
+      return {
+        key,
+        level,
+        hasDoubleJump: level >= 1,
+        doubleJumpBoost: 13.8 + Math.max(0, level - 1) * 0.9
+      };
+    }
+    if (key === 'magnet') {
+      return {
+        key,
+        level,
+        radius: level > 0 ? 4.5 + level * 2.4 : 0
+      };
+    }
+    if (key === 'multiplier') {
+      return {
+        key,
+        level,
+        doubleChance: Math.min(1, level * 0.2)
+      };
+    }
+
     const duration = Number((cfg.baseDuration + (level - 1) * cfg.durationStep).toFixed(1));
     return {
       key,
@@ -1208,7 +1204,7 @@ export class StorySystem {
       return { success: false, level: this.getUpgradeLevel(key), cost };
     }
     this.state.currency -= cost;
-    this.state.upgrades[key] += 1;
+    this.state.upgrades[key] = this.getUpgradeLevel(key) + 1;
     this.save();
     return {
       success: true,
@@ -1219,18 +1215,48 @@ export class StorySystem {
     };
   }
 
-  /**
-   * Вычисляет и разблокирует одну из 4 концовок после прохождения 5-й главы.
-   */
+  // ---- СКИНЫ ----
+  getSkins() {
+    return SKINS.map((skin) => ({
+      ...skin,
+      owned: this.state.ownedSkins.includes(skin.id),
+      equipped: this.state.equippedSkin === skin.id,
+      affordable: this.state.currency >= skin.cost
+    }));
+  }
+
+  getEquippedSkin() {
+    return SKINS.find((s) => s.id === this.state.equippedSkin) || SKINS[0];
+  }
+
+  buyOrEquipSkin(skinId) {
+    const skin = SKINS.find((s) => s.id === skinId);
+    if (!skin) return { success: false };
+
+    if (this.state.ownedSkins.includes(skin.id)) {
+      this.state.equippedSkin = skin.id;
+      this.save();
+      return { success: true, action: 'equipped', skin };
+    }
+
+    if (this.state.currency < skin.cost) {
+      return { success: false, action: 'insufficient' };
+    }
+
+    this.state.currency -= skin.cost;
+    this.state.ownedSkins.push(skin.id);
+    this.state.equippedSkin = skin.id;
+    this.save();
+    return { success: true, action: 'bought', skin };
+  }
+
   evaluateEnding() {
     const { empathy, cynicism, madness } = this.state.karma;
     const allCassettesCollected = this.state.collectedCassettes.length >= CASSETTES.length;
     const maxStat = Math.max(empathy, cynicism, madness);
-    const minConvictionThreshold = 12;
-
     let endingId = 'skuf';
 
-    if (maxStat < minConvictionThreshold) {
+    if (maxStat < 12) {
       endingId = 'skuf';
     } else if (empathy >= cynicism && empathy >= madness) {
       endingId = allCassettesCollected ? 'queen' : 'skuf';
@@ -1244,7 +1270,6 @@ export class StorySystem {
       this.state.unlockedEndings.push(endingId);
       this.save();
     }
-
     return ENDINGS.find((e) => e.id === endingId) || ENDINGS[3];
   }
 
