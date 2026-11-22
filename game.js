@@ -11,9 +11,301 @@ const LANE_SWITCH_SPEED = 14.5;
 const BASE_RUN_SPEED = 24;
 const MAX_RUN_SPEED = 46;
 const SPEED_ACCEL_PER_SEC = 0.16;
-const TRACK_LENGTH = 175;
+const TRACK_LENGTH = 185;
 const SPAWN_Z = -132;
 const DESPAWN_Z = 16;
+
+// Реалистичные ночные палитры глав (баланс теплого уличного света и акцентов вместо сплошного неона)
+const CHAPTER_THEMES = {
+  1: { sky: 0x101320, fog: 0x131624, fogDensity: 0.0135, lamp: 0xffc373, accent: 0xe64980, secondary: 0x845ef7, hemiSky: 0x8ea4d2, hemiGround: 0x1d1826 },
+  2: { sky: 0x140e1c, fog: 0x181122, fogDensity: 0.014, lamp: 0xff9f68, accent: 0xf03e7c, secondary: 0x4dabf7, hemiSky: 0x9b89c4, hemiGround: 0x221629 },
+  3: { sky: 0x1a1426, fog: 0x1f172d, fogDensity: 0.0128, lamp: 0xffd8a8, accent: 0xff6b9d, secondary: 0xb197fc, hemiSky: 0xc2a8e8, hemiGround: 0x261d33 },
+  4: { sky: 0x0b121c, fog: 0x0e1622, fogDensity: 0.0155, lamp: 0x99e9f2, accent: 0x3bc9db, secondary: 0x7950f2, hemiSky: 0x6ea8c9, hemiGround: 0x121926 },
+  5: { sky: 0x1a1020, fog: 0x211528, fogDensity: 0.012, lamp: 0xffb38a, accent: 0xff4d88, secondary: 0xd0bfff, hemiSky: 0xd4a5d6, hemiGround: 0x24162b }
+};
+
+// ===================== ГЕНЕРАТОР ПРОЦЕДУРНЫХ ТЕКСТУР =====================
+function makeCanvasTex(w, h, drawFn, repeatX = 1, repeatY = 1) {
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  drawFn(ctx, w, h);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(repeatX, repeatY);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function createProceduralTextures() {
+  // 1. Мокрый городской асфальт с зернистостью, трещинами и потертой разметкой
+  const asphalt = makeCanvasTex(256, 256, (ctx, w, h) => {
+    ctx.fillStyle = '#1b1d24';
+    ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 3600; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const shade = 20 + Math.floor(Math.random() * 24);
+      ctx.fillStyle = `rgb(${shade},${shade + 1},${shade + 6})`;
+      ctx.fillRect(x, y, 2, 2);
+    }
+    // Легкие темные полосы колеи
+    ctx.fillStyle = 'rgba(8, 9, 14, 0.35)';
+    ctx.fillRect(34, 0, 26, h);
+    ctx.fillRect(115, 0, 26, h);
+    ctx.fillRect(196, 0, 26, h);
+    // Тонкая дорожная разметка полос
+    ctx.fillStyle = 'rgba(215, 210, 224, 0.28)';
+    for (let y = 10; y < h; y += 64) {
+      ctx.fillRect(84, y, 4, 34);
+      ctx.fillRect(168, y, 4, 34);
+    }
+    // Желто-белые потертые края
+    ctx.fillStyle = 'rgba(230, 175, 95, 0.32)';
+    ctx.fillRect(6, 0, 4, h);
+    ctx.fillRect(w - 10, 0, 4, h);
+  }, 1, 18);
+
+  // 2. Бетонная плитка тротуара
+  const sidewalk = makeCanvasTex(128, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#2b2d38';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#1a1b24';
+    ctx.lineWidth = 2;
+    for (let y = 0; y < h; y += 32) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    for (let x = 0; x < w; x += 32) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 600; i++) {
+      const v = 35 + Math.floor(Math.random() * 20);
+      ctx.fillStyle = `rgba(${v},${v},${v + 8},0.4)`;
+      ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+    }
+  }, 1, 24);
+
+  // 3. Фасад панельного дома (бетонные плиты + теплые/холодные окна с рамами)
+  const buildingFacade = makeCanvasTex(256, 256, (ctx, w, h) => {
+    ctx.fillStyle = '#252734';
+    ctx.fillRect(0, 0, w, h);
+    // Швы плит
+    ctx.strokeStyle = '#191a24';
+    ctx.lineWidth = 2;
+    for (let y = 0; y < h; y += 32) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    for (let x = 0; x < w; x += 64) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+      ctx.stroke();
+    }
+    // Зернистость бетона
+    for (let i = 0; i < 1200; i++) {
+      const c = 30 + Math.floor(Math.random() * 24);
+      ctx.fillStyle = `rgba(${c},${c},${c + 8},0.35)`;
+      ctx.fillRect(Math.random() * w, Math.random() * h, 3, 2);
+    }
+    // Окна (часть выключена, часть — теплый домашний свет, часть — холодный ТВ)
+    const palette = ['#131520', '#161926', '#ffd08a', '#f2b872', '#89b4fa', '#e599c8'];
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 4; col++) {
+        const wx = col * 64 + 14;
+        const wy = row * 32 + 7;
+        const r = Math.random();
+        const fill = r < 0.56 ? palette[0] : r < 0.78 ? palette[2] : r < 0.88 ? palette[3] : r < 0.95 ? palette[4] : palette[5];
+        ctx.fillStyle = '#12131c';
+        ctx.fillRect(wx - 2, wy - 2, 38, 20);
+        ctx.fillStyle = fill;
+        ctx.fillRect(wx, wy, 34, 16);
+        // Оконная рама
+        ctx.fillStyle = '#1c1e2b';
+        ctx.fillRect(wx + 16, wy, 2, 16);
+        ctx.fillRect(wx, wy + 7, 34, 2);
+      }
+    }
+  }, 1, 1);
+
+  // 4. Борт вагона / ночного грузовика (гофра, двери, окна, потертости и граффити)
+  const trainSide = makeCanvasTex(256, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#2d3242';
+    ctx.fillRect(0, 0, w, h);
+    // Нижняя полоса и гофра
+    ctx.fillStyle = '#1f2330';
+    ctx.fillRect(0, 86, w, 42);
+    ctx.fillStyle = '#d9487b';
+    ctx.fillRect(0, 76, w, 9);
+    ctx.fillStyle = '#e5e7f0';
+    ctx.fillRect(0, 85, w, 3);
+    // Горизонтальные ребра металла
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    for (let y = 92; y < h; y += 6) {
+      ctx.fillRect(0, y, w, 2);
+    }
+    // Окна вагона с теплым салонным светом
+    for (let x = 14; x < w - 20; x += 48) {
+      ctx.fillStyle = '#141722';
+      ctx.fillRect(x - 2, 18, 36, 42);
+      const grad = ctx.createLinearGradient(0, 20, 0, 58);
+      grad.addColorStop(0, '#ffe3b3');
+      grad.addColorStop(1, '#8c7a99');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, 20, 32, 38);
+      // Блик на стекле
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.fillRect(x + 3, 22, 6, 34);
+    }
+    // Легкий тег граффити поверх нижней части
+    ctx.strokeStyle = 'rgba(255, 110, 175, 0.55)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(28, 112);
+    ctx.quadraticCurveTo(60, 78, 92, 110);
+    ctx.quadraticCurveTo(120, 82, 152, 108);
+    ctx.stroke();
+  }, 1, 1);
+
+  // 5. Предупреждающие полосы для барьеров
+  const hazard = makeCanvasTex(128, 64, (ctx, w, h) => {
+    ctx.fillStyle = '#e8b949';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#1c1d24';
+    for (let i = -h; i < w + h; i += 28) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i + 14, 0);
+      ctx.lineTo(i - 14, h);
+      ctx.lineTo(i - 28, h);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // Легкая грязь/потертость
+    for (let i = 0; i < 300; i++) {
+      ctx.fillStyle = 'rgba(20,20,25,0.22)';
+      ctx.fillRect(Math.random() * w, Math.random() * h, 3, 2);
+    }
+  }, 2, 1);
+
+  // 6. Полосатые гетры Альтушки (фактурный трикотаж)
+  const stripedSocks = makeCanvasTex(64, 128, (ctx, w, h) => {
+    for (let y = 0; y < h; y += 16) {
+      ctx.fillStyle = (y / 16) % 2 === 0 ? '#18141f' : '#f48fb1';
+      ctx.fillRect(0, y, w, 16);
+      // Тонкая рубчиковая фактура вязки
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      for (let x = 0; x < w; x += 4) {
+        ctx.fillRect(x, y, 1, 16);
+      }
+    }
+  }, 1, 1);
+
+  // 7. Текстура худи (плотный хлопок + принт на спине)
+  const hoodieFabric = makeCanvasTex(128, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#1d1826';
+    ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1400; i++) {
+      const v = 22 + Math.floor(Math.random() * 18);
+      ctx.fillStyle = `rgb(${v},${v - 2},${v + 8})`;
+      ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+    }
+    // Строчка и принт в стиле Y2K
+    ctx.strokeStyle = 'rgba(244, 143, 177, 0.75)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(64, 34);
+    ctx.lineTo(74, 54);
+    ctx.lineTo(94, 62);
+    ctx.lineTo(74, 70);
+    ctx.lineTo(64, 92);
+    ctx.lineTo(54, 70);
+    ctx.lineTo(34, 62);
+    ctx.lineTo(54, 54);
+    ctx.closePath();
+    ctx.stroke();
+  }, 1, 1);
+
+  // 8. Аниме-лицо Альтушки (на случай облета камеры в Хабе)
+  const faceTex = makeCanvasTex(128, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#fae5e8';
+    ctx.fillRect(0, 0, w, h);
+    // Румянец
+    ctx.fillStyle = 'rgba(255, 115, 160, 0.28)';
+    ctx.beginPath();
+    ctx.ellipse(32, 78, 12, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(96, 78, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Глаза (гетерохромия: фиолетовый и розовый)
+    const drawEye = (cx, irisColor) => {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(cx, 62, 13, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = irisColor;
+      ctx.beginPath();
+      ctx.ellipse(cx, 63, 8, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#120c18';
+      ctx.beginPath();
+      ctx.arc(cx, 64, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(cx - 3, 58, 3, 0, Math.PI * 2);
+      ctx.fill();
+      // Стрелка подводки
+      ctx.strokeStyle = '#120c18';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cx - 14, 55);
+      ctx.quadraticCurveTo(cx, 48, cx + 14, 55);
+      ctx.stroke();
+    };
+    drawEye(40, '#845ef7');
+    drawEye(88, '#e64980');
+    // Губы
+    ctx.strokeStyle = '#c45b7c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(56, 95);
+    ctx.quadraticCurveTo(64, 100, 72, 95);
+    ctx.stroke();
+  }, 1, 1);
+
+  // 9. Мягкая круглая тень под персонажем
+  const blobShadow = makeCanvasTex(64, 64, (ctx, w, h) => {
+    const grad = ctx.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
+    grad.addColorStop(0, 'rgba(5, 5, 10, 0.72)');
+    grad.addColorStop(0.6, 'rgba(5, 5, 10, 0.32)');
+    grad.addColorStop(1, 'rgba(5, 5, 10, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+  }, 1, 1);
+
+  return {
+    asphalt,
+    sidewalk,
+    buildingFacade,
+    trainSide,
+    hazard,
+    stripedSocks,
+    hoodieFabric,
+    faceTex,
+    blobShadow
+  };
+}
 
 // ===================== ПРОЦЕДУРНЫЙ СИНТЕЗАТОР (WEB AUDIO API) =====================
 class SoundEngine {
@@ -30,7 +322,6 @@ class SoundEngine {
     this.nextNoteTime = 0;
     this.schedulerId = null;
 
-    // Минорная пост-панк / фонк басовая линия (частоты в Гц, C# minor / F# minor вайб)
     this.bassPattern = [
       69.3, 0, 69.3, 82.41, 69.3, 0, 92.5, 82.41,
       55.0, 0, 55.0, 65.41, 61.74, 0, 73.42, 65.41
@@ -111,7 +402,7 @@ class SoundEngine {
   scheduleMusic() {
     if (!this.ctx || !this.musicPlaying) return;
     const baseBpm = 128 * this.tempoMultiplier;
-    const stepDuration = 60 / baseBpm / 4; // 16-е ноты
+    const stepDuration = 60 / baseBpm / 4;
 
     while (this.nextNoteTime < this.ctx.currentTime + 0.14) {
       this.triggerStep(this.stepIndex, this.nextNoteTime, stepDuration);
@@ -121,28 +412,13 @@ class SoundEngine {
   }
 
   triggerStep(step, time, stepDur) {
-    // Кик на 0, 4, 8, 12 + синкопа на 14
-    if (step % 4 === 0 || step === 14) {
-      this.playKick(time);
-    }
-    // Снэйр/клэп на 4 и 12
-    if (step === 4 || step === 12) {
-      this.playSnare(time);
-    }
-    // Хэт на четных и слабых долях
-    if (step % 2 === 1) {
-      this.playHat(time, 0.045);
-    }
-    // Пост-панк/фонк бас
+    if (step % 4 === 0 || step === 14) this.playKick(time);
+    if (step === 4 || step === 12) this.playSnare(time);
+    if (step % 2 === 1) this.playHat(time, 0.045);
     const bassFreq = this.bassPattern[step];
-    if (bassFreq > 0) {
-      this.playBassNote(bassFreq, time, stepDur * 1.45);
-    }
-    // Легкий фонк-коубелл при ускорении
+    if (bassFreq > 0) this.playBassNote(bassFreq, time, stepDur * 1.45);
     const cowFreq = this.cowbellPattern[step];
-    if (cowFreq > 0 && this.tempoMultiplier >= 1.05) {
-      this.playCowbell(cowFreq, time, 0.09);
-    }
+    if (cowFreq > 0 && this.tempoMultiplier >= 1.05) this.playCowbell(cowFreq, time, 0.09);
   }
 
   playKick(time) {
@@ -222,7 +498,6 @@ class SoundEngine {
     osc.stop(time + dur + 0.01);
   }
 
-  // ---- SFX ----
   playTone(type, startFreq, endFreq, duration, volume = 0.25, delay = 0) {
     if (!this.ensureContext() || this.muted) return;
     const t = this.ctx.currentTime + delay;
@@ -239,28 +514,19 @@ class SoundEngine {
     osc.stop(t + duration + 0.01);
   }
 
-  playSwipe() {
-    this.playTone('triangle', 320, 620, 0.08, 0.2);
-  }
-
+  playSwipe() { this.playTone('triangle', 320, 620, 0.08, 0.2); }
   playJump() {
     this.playTone('sine', 210, 560, 0.14, 0.28);
     this.playTone('triangle', 420, 740, 0.1, 0.12, 0.02);
   }
-
-  playSlide() {
-    this.playTone('sawtooth', 260, 95, 0.15, 0.18);
-  }
-
+  playSlide() { this.playTone('sawtooth', 260, 95, 0.15, 0.18); }
   playMediator() {
     this.playTone('sine', 880, 1320, 0.09, 0.22);
     this.playTone('triangle', 1320, 1760, 0.1, 0.14, 0.045);
   }
-
   playCanOpen() {
     if (!this.ensureContext() || this.muted) return;
     const t = this.ctx.currentTime;
-    // Пшик банки
     const src = this.ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
     const filter = this.ctx.createBiquadFilter();
@@ -274,26 +540,21 @@ class SoundEngine {
     gain.connect(this.sfxGain);
     src.start(t);
     src.stop(t + 0.24);
-    // Кислотный разгон
     this.playTone('sawtooth', 240, 980, 0.26, 0.22, 0.05);
   }
-
   playShield() {
     this.playTone('triangle', 440, 660, 0.12, 0.24);
     this.playTone('sine', 660, 990, 0.18, 0.22, 0.08);
   }
-
   playSlowmo() {
     this.playTone('square', 780, 260, 0.26, 0.18);
     this.playTone('sine', 520, 190, 0.3, 0.2, 0.06);
   }
-
   playCassette() {
     this.playTone('triangle', 523.25, 659.25, 0.11, 0.24, 0);
     this.playTone('triangle', 659.25, 783.99, 0.11, 0.24, 0.09);
     this.playTone('sine', 783.99, 1046.5, 0.24, 0.26, 0.18);
   }
-
   playSmash() {
     if (!this.ensureContext() || this.muted) return;
     const t = this.ctx.currentTime;
@@ -312,162 +573,291 @@ class SoundEngine {
     src.stop(t + 0.24);
     this.playTone('sawtooth', 160, 55, 0.18, 0.28);
   }
-
   playHit() {
     this.playTone('sawtooth', 140, 36, 0.32, 0.36);
     this.playSmash();
   }
-
-  playClick() {
-    this.playTone('triangle', 640, 860, 0.05, 0.14);
-  }
+  playClick() { this.playTone('triangle', 640, 860, 0.05, 0.14); }
 }
 
-// ===================== ПРОЦЕДУРНЫЕ 3D-МОДЕЛИ =====================
-function createAltushkaRig() {
+// ===================== ФАКТУРНАЯ ЖЕНСТВЕННАЯ 3D-МОДЕЛЬ АЛЬТУШКИ =====================
+function createAltushkaRig(textures) {
   const root = new THREE.Group();
   const bodyPivot = new THREE.Group();
   root.add(bodyPivot);
 
-  const matSkin = new THREE.MeshStandardMaterial({ color: 0xf6e6f0, roughness: 0.65 });
-  const matHairDark = new THREE.MeshStandardMaterial({ color: 0x120d1a, roughness: 0.7 });
+  const matSkin = new THREE.MeshStandardMaterial({ color: 0xfbe5e8, roughness: 0.58, metalness: 0.02 });
+  const matFace = new THREE.MeshStandardMaterial({ map: textures.faceTex, roughness: 0.52 });
+  const matHairDark = new THREE.MeshStandardMaterial({ color: 0x16121f, roughness: 0.48, metalness: 0.12 });
   const matHairPink = new THREE.MeshStandardMaterial({
-    color: 0xff2a85,
-    emissive: 0xff2a85,
-    emissiveIntensity: 0.35,
-    roughness: 0.45
+    color: 0xf06595,
+    emissive: 0x7a1c42,
+    emissiveIntensity: 0.25,
+    roughness: 0.42
   });
-  const matHoodie = new THREE.MeshStandardMaterial({ color: 0x1b1526, roughness: 0.85 });
-  const matHoodieTrim = new THREE.MeshStandardMaterial({
-    color: 0x9d4edd,
-    emissive: 0x9d4edd,
-    emissiveIntensity: 0.55
+  const matHairViolet = new THREE.MeshStandardMaterial({
+    color: 0x9775fa,
+    emissive: 0x3b2273,
+    emissiveIntensity: 0.22,
+    roughness: 0.42
   });
-  const matSkirt = new THREE.MeshStandardMaterial({ color: 0x261736, roughness: 0.8 });
-  const matBoot = new THREE.MeshStandardMaterial({ color: 0x0b090f, roughness: 0.5, metalness: 0.25 });
-  const matSole = new THREE.MeshStandardMaterial({
-    color: 0xff2a85,
-    emissive: 0xff2a85,
-    emissiveIntensity: 0.4
+  const matHoodie = new THREE.MeshStandardMaterial({
+    map: textures.hoodieFabric,
+    roughness: 0.88,
+    metalness: 0.04
   });
-  const matStripeDark = new THREE.MeshStandardMaterial({ color: 0x120f17, roughness: 0.8 });
-  const matStripePink = new THREE.MeshStandardMaterial({ color: 0xff99c8, roughness: 0.6 });
+  const matHoodieTrim = new THREE.MeshStandardMaterial({ color: 0xf48fb1, roughness: 0.65 });
+  const matSkirt = new THREE.MeshStandardMaterial({ color: 0x251a2e, roughness: 0.78 });
+  const matLeather = new THREE.MeshStandardMaterial({ color: 0x141219, roughness: 0.35, metalness: 0.28 });
+  const matSilver = new THREE.MeshStandardMaterial({ color: 0xd8dce8, roughness: 0.22, metalness: 0.85 });
+  const matSocks = new THREE.MeshStandardMaterial({ map: textures.stripedSocks, roughness: 0.85 });
+  const matSole = new THREE.MeshStandardMaterial({ color: 0x1c1924, roughness: 0.7 });
 
-  // Оверсайз-худи (торс)
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.68, 0.42), matHoodie);
-  torso.position.set(0, 1.06, 0);
-  bodyPivot.add(torso);
+  // --- ТОРС (женственный силуэт: узкая талия, плавные бедра, укороченный оверсайз-худи) ---
+  const waist = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.19, 0.24, 14), matHoodie);
+  waist.position.set(0, 0.86, 0);
+  bodyPivot.add(waist);
 
-  // Капюшон и неоновая полоса на спине
-  const hood = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.22, 0.36), matHoodie);
-  hood.position.set(0, 1.38, 0.14);
+  const upperTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.155, 0.34, 14), matHoodie);
+  upperTorso.scale.set(1.06, 1, 0.82);
+  upperTorso.position.set(0, 1.13, 0);
+  bodyPivot.add(upperTorso);
+
+  // Мягкий объем груди и ключиц
+  const chest = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), matHoodie);
+  chest.scale.set(1.22, 0.75, 0.72);
+  chest.position.set(0, 1.15, -0.09);
+  bodyPivot.add(chest);
+
+  // Нижняя резинка укороченного худи
+  const hoodieHem = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.032, 8, 18), matHoodieTrim);
+  hoodieHem.rotation.x = Math.PI / 2;
+  hoodieHem.position.set(0, 0.86, 0);
+  bodyPivot.add(hoodieHem);
+
+  // Спущенный капюшон на спине с кошачьими ушками
+  const hood = new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 10), matHoodie);
+  hood.scale.set(1.1, 0.65, 0.85);
+  hood.position.set(0, 1.32, 0.13);
   bodyPivot.add(hood);
 
-  const backStripe = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.34, 0.04), matHoodieTrim);
-  backStripe.position.set(0, 1.06, 0.22);
-  bodyPivot.add(backStripe);
+  const earGeo = new THREE.ConeGeometry(0.055, 0.13, 5);
+  const earL = new THREE.Mesh(earGeo, matHoodie);
+  earL.position.set(-0.14, 1.43, 0.18);
+  earL.rotation.set(0.5, 0, 0.35);
+  bodyPivot.add(earL);
+  const earR = new THREE.Mesh(earGeo, matHoodie);
+  earR.position.set(0.14, 1.43, 0.18);
+  earR.rotation.set(0.5, 0, -0.35);
+  bodyPivot.add(earR);
 
-  // Юбка-плиссе
-  const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.42, 0.28, 8), matSkirt);
-  skirt.position.set(0, 0.66, 0);
-  bodyPivot.add(skirt);
+  // Кожаный мини-рюкзачок с серебряными заклепками и брелком (виден в забеге!)
+  const backpack = new THREE.Group();
+  backpack.position.set(0, 1.07, 0.18);
+  const bpBody = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.3, 0.13), matLeather);
+  backpack.add(bpBody);
+  const bpPocket = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.05), matLeather);
+  bpPocket.position.set(0, -0.07, 0.07);
+  backpack.add(bpPocket);
+  const bpZip = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.015, 0.02), matSilver);
+  bpZip.position.set(0, -0.01, 0.09);
+  backpack.add(bpZip);
+  // Серебряный крестик-подвеска на рюкзаке
+  const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.09, 0.015), matSilver);
+  crossV.position.set(0, 0.06, 0.07);
+  backpack.add(crossV);
+  const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.015), matSilver);
+  crossH.position.set(0, 0.075, 0.07);
+  backpack.add(crossH);
+  // Лямки рюкзака
+  const strapGeo = new THREE.TorusGeometry(0.14, 0.016, 6, 12, Math.PI);
+  const strapL = new THREE.Mesh(strapGeo, matLeather);
+  strapL.position.set(-0.15, 0.05, -0.08);
+  strapL.rotation.y = Math.PI / 2;
+  backpack.add(strapL);
+  const strapR = strapL.clone();
+  strapR.position.x = 0.15;
+  backpack.add(strapR);
+  bodyPivot.add(backpack);
 
-  // Чокер
-  const choker = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.11, 0.11, 0.08, 10),
-    new THREE.MeshStandardMaterial({ color: 0x09090b, emissive: 0xff2a85, emissiveIntensity: 0.4 })
-  );
-  choker.position.set(0, 1.44, 0);
-  bodyPivot.add(choker);
+  // --- ПЫШНАЯ СКЛАДЧАТАЯ ЮБКА-ПЛИССЕ + РЕМЕНЬ С ЦЕПОЧКОЙ ---
+  const skirtPivot = new THREE.Group();
+  skirtPivot.position.set(0, 0.77, 0);
+  bodyPivot.add(skirtPivot);
 
-  // Голова
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.175, 0.185, 0.06, 16), matLeather);
+  belt.position.y = 0.06;
+  skirtPivot.add(belt);
+
+  const skirtBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.34, 0.28, 16), matSkirt);
+  skirtBase.position.y = -0.08;
+  skirtPivot.add(skirtBase);
+
+  // Складки плиссе по кругу
+  const pleatGeo = new THREE.BoxGeometry(0.085, 0.27, 0.03);
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const pleat = new THREE.Mesh(pleatGeo, i % 2 === 0 ? matSkirt : matLeather);
+    pleat.position.set(Math.sin(angle) * 0.25, -0.085, Math.cos(angle) * 0.25);
+    pleat.rotation.y = angle;
+    pleat.rotation.x = 0.32;
+    skirtPivot.add(pleat);
+  }
+  // Розовая окантовка по краю юбки и цепочка сбоку
+  const skirtTrim = new THREE.Mesh(new THREE.TorusGeometry(0.335, 0.014, 6, 20), matHoodieTrim);
+  skirtTrim.rotation.x = Math.PI / 2;
+  skirtTrim.position.y = -0.21;
+  skirtPivot.add(skirtTrim);
+
+  const chain = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.01, 6, 12, Math.PI), matSilver);
+  chain.position.set(0.21, -0.02, 0.04);
+  chain.rotation.z = Math.PI;
+  chain.rotation.y = 0.4;
+  skirtPivot.add(chain);
+
+  // --- ШЕЯ, ЧОКЕР И ГОЛОВА ---
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.14, 10), matSkin);
+  neck.position.set(0, 1.36, 0);
+  bodyPivot.add(neck);
+
+  const chokerBand = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.078, 0.045, 12), matLeather);
+  chokerBand.position.set(0, 1.36, 0);
+  bodyPivot.add(chokerBand);
+  const chokerRing = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.008, 6, 12), matSilver);
+  chokerRing.position.set(0, 1.34, -0.082);
+  bodyPivot.add(chokerRing);
+
   const headGroup = new THREE.Group();
-  headGroup.position.set(0, 1.66, 0);
+  headGroup.position.set(0, 1.56, 0);
   bodyPivot.add(headGroup);
 
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.4, 0.38), matSkin);
-  headGroup.add(head);
+  // Округлая аниме-голова с текстурой лица спереди
+  const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.185, 16, 14), matSkin);
+  headSphere.scale.set(0.95, 1.03, 0.92);
+  headGroup.add(headSphere);
 
-  const hairCap = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.26, 0.43), matHairDark);
-  hairCap.position.set(0, 0.12, 0.02);
-  headGroup.add(hairCap);
+  const facePlane = new THREE.Mesh(
+    new THREE.CircleGeometry(0.145, 16),
+    matFace
+  );
+  facePlane.position.set(0, -0.01, -0.168);
+  facePlane.rotation.y = Math.PI;
+  headGroup.add(facePlane);
 
-  const bangs = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.14, 0.1), matHairPink);
-  bangs.position.set(0, 0.1, -0.19);
-  headGroup.add(bangs);
+  // Объемная шапка волос + рваная челка + боковые пряди
+  const hairCrown = new THREE.Mesh(new THREE.SphereGeometry(0.205, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.65), matHairDark);
+  hairCrown.position.set(0, 0.02, 0.015);
+  headGroup.add(hairCrown);
 
-  // Двухцветные хвостики (черно-розовые)
-  const leftTailPivot = new THREE.Group();
-  leftTailPivot.position.set(-0.28, 0.14, 0.06);
-  headGroup.add(leftTailPivot);
-  const leftBun = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), matHairDark);
-  leftTailPivot.add(leftBun);
-  const leftTailTop = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.42, 7), matHairDark);
-  leftTailTop.position.set(-0.08, -0.22, 0.06);
-  leftTailTop.rotation.z = -0.28;
-  leftTailPivot.add(leftTailTop);
-  const leftTailTip = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.28, 7), matHairPink);
-  leftTailTip.position.set(-0.14, -0.46, 0.09);
-  leftTailTip.rotation.z = -0.28;
-  leftTailPivot.add(leftTailTip);
+  const hairBack = new THREE.Mesh(new THREE.SphereGeometry(0.195, 14, 10), matHairDark);
+  hairBack.scale.set(1.04, 1.08, 0.72);
+  hairBack.position.set(0, -0.02, 0.08);
+  headGroup.add(hairBack);
 
-  const rightTailPivot = new THREE.Group();
-  rightTailPivot.position.set(0.28, 0.14, 0.06);
-  headGroup.add(rightTailPivot);
-  const rightBun = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), matHairPink);
-  rightTailPivot.add(rightBun);
-  const rightTailTop = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.42, 7), matHairPink);
-  rightTailTop.position.set(0.08, -0.22, 0.06);
-  rightTailTop.rotation.z = 0.28;
-  rightTailPivot.add(rightTailTop);
-  const rightTailTip = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.28, 7), matHairDark);
-  rightTailTip.position.set(0.14, -0.46, 0.09);
-  rightTailTip.rotation.z = 0.28;
-  rightTailPivot.add(rightTailTip);
+  // Боковые пряди у лица (розовая и фиолетовая)
+  const sideStrandGeo = new THREE.CapsuleGeometry(0.036, 0.18, 4, 8);
+  const strandL = new THREE.Mesh(sideStrandGeo, matHairViolet);
+  strandL.position.set(-0.15, -0.05, -0.07);
+  strandL.rotation.z = -0.14;
+  headGroup.add(strandL);
 
-  // Рукава худи
+  const strandR = new THREE.Mesh(sideStrandGeo, matHairPink);
+  strandR.position.set(0.15, -0.05, -0.07);
+  strandR.rotation.z = 0.14;
+  headGroup.add(strandR);
+
+  // Пышные изогнутые двухцветные хвостики с бантами
+  const makeTwinTail = (side, topMat, tipMat) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(side * 0.2, 0.08, 0.07);
+
+    // Резинка-бантик
+    const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.018, 6, 12), matHoodieTrim);
+    ribbon.rotation.y = side * 0.5;
+    pivot.add(ribbon);
+
+    const upper = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.24, 6, 10), topMat);
+    upper.position.set(side * 0.08, -0.16, 0.05);
+    upper.rotation.z = side * 0.32;
+    upper.rotation.x = 0.18;
+    pivot.add(upper);
+
+    const midPivot = new THREE.Group();
+    midPivot.position.set(side * 0.14, -0.32, 0.09);
+    pivot.add(midPivot);
+
+    const lower = new THREE.Mesh(new THREE.ConeGeometry(0.078, 0.42, 10), tipMat);
+    lower.position.set(side * 0.05, -0.18, 0.04);
+    lower.rotation.z = side * 0.18 + Math.PI;
+    midPivot.add(lower);
+
+    headGroup.add(pivot);
+    return { pivot, midPivot };
+  };
+
+  const leftTail = makeTwinTail(-1, matHairDark, matHairViolet);
+  const rightTail = makeTwinTail(1, matHairDark, matHairPink);
+
+  // --- СТРОЙНЫЕ РУКИ В ОБЪЕМНЫХ РУКАВАХ ---
   const makeArm = (side) => {
     const pivot = new THREE.Group();
-    pivot.position.set(side * 0.42, 1.32, 0);
-    const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.56, 0.22), matHoodie);
-    sleeve.position.set(0, -0.24, 0);
-    pivot.add(sleeve);
-    const cuff = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.08, 0.23), matHairPink);
-    cuff.position.set(0, -0.5, 0);
+    pivot.position.set(side * 0.25, 1.24, 0);
+
+    const upperSleeve = new THREE.Mesh(new THREE.CapsuleGeometry(0.068, 0.2, 6, 8), matHoodie);
+    upperSleeve.position.set(0, -0.12, 0);
+    pivot.add(upperSleeve);
+
+    const forearmSleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.085, 0.24, 10), matHoodie);
+    forearmSleeve.position.set(0, -0.33, -0.02);
+    pivot.add(forearmSleeve);
+
+    const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.078, 0.015, 6, 12), matHoodieTrim);
+    cuff.rotation.x = Math.PI / 2;
+    cuff.position.set(0, -0.45, -0.02);
     pivot.add(cuff);
+
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), matSkin);
+    hand.position.set(0, -0.49, -0.02);
+    pivot.add(hand);
+
     bodyPivot.add(pivot);
     return pivot;
   };
   const leftArm = makeArm(-1);
   const rightArm = makeArm(1);
 
-  // Ноги: полосатые гетры + массивные ботинки на платформе
+  // --- СТРОЙНЫЕ НОГИ В ПОЛОСАТЫХ ГЕТРАХ И БОТИНКАХ НА ПЛАТФОРМЕ ---
   const makeLeg = (side) => {
     const pivot = new THREE.Group();
-    pivot.position.set(side * 0.17, 0.56, 0);
+    pivot.position.set(side * 0.115, 0.68, 0);
 
-    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.16), matSkin);
-    thigh.position.set(0, -0.08, 0);
+    // Бедро (округлое, женственное)
+    const thigh = new THREE.Mesh(new THREE.CapsuleGeometry(0.072, 0.2, 6, 10), matSkin);
+    thigh.position.set(0, -0.14, 0);
     pivot.add(thigh);
 
-    // Полосатые гетры (4 сегмента)
-    for (let i = 0; i < 4; i++) {
-      const seg = new THREE.Mesh(
-        new THREE.BoxGeometry(0.19, 0.075, 0.19),
-        i % 2 === 0 ? matStripeDark : matStripePink
-      );
-      seg.position.set(0, -0.22 - i * 0.075, 0);
-      pivot.add(seg);
-    }
+    // Полосатые гольфы / гетры с текстурой вязки
+    const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.076, 0.3, 12), matSocks);
+    calf.position.set(0, -0.38, 0);
+    pivot.add(calf);
 
-    // Ботинок на платформе
-    const bootUpper = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.34), matBoot);
-    bootUpper.position.set(0, -0.51, -0.04);
+    // Кожаный ботинок на массивной платформе + серебряная пряжка
+    const bootUpper = new THREE.Mesh(new THREE.CapsuleGeometry(0.078, 0.12, 6, 10), matLeather);
+    bootUpper.rotation.x = Math.PI / 2;
+    bootUpper.position.set(0, -0.56, -0.04);
     pivot.add(bootUpper);
 
-    const platform = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.09, 0.36), matSole);
-    platform.position.set(0, -0.6, -0.04);
+    const bootBuckle = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.025, 0.06), matSilver);
+    bootBuckle.position.set(0, -0.51, -0.02);
+    pivot.add(bootBuckle);
+
+    const platform = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.085, 0.28), matSole);
+    platform.position.set(0, -0.64, -0.04);
     pivot.add(platform);
+
+    const soleAccent = new THREE.Mesh(new THREE.BoxGeometry(0.165, 0.02, 0.285), matHoodieTrim);
+    soleAccent.position.set(0, -0.61, -0.04);
+    pivot.add(soleAccent);
 
     bodyPivot.add(pivot);
     return pivot;
@@ -475,91 +865,115 @@ function createAltushkaRig() {
   const leftLeg = makeLeg(-1);
   const rightLeg = makeLeg(1);
 
-  // Визуальный купол Чокер-щита
+  // Мягкая тень под ногами
+  const shadowBlob = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.15, 1.15),
+    new THREE.MeshBasicMaterial({ map: textures.blobShadow, transparent: true, depthWrite: false })
+  );
+  shadowBlob.rotation.x = -Math.PI / 2;
+  shadowBlob.position.set(0, 0.03, 0);
+  root.add(shadowBlob);
+
+  // Деликатные ауры баффов
   const shieldAura = new THREE.Mesh(
-    new THREE.SphereGeometry(1.12, 16, 12),
+    new THREE.SphereGeometry(1.06, 18, 14),
     new THREE.MeshBasicMaterial({
-      color: 0xe0aaff,
+      color: 0xd0bfff,
       wireframe: true,
       transparent: true,
-      opacity: 0.45
+      opacity: 0.35
     })
   );
   shieldAura.position.set(0, 0.95, 0);
   shieldAura.visible = false;
   root.add(shieldAura);
 
-  // Визуальная неоновая аура Энергетика
   const energyAura = new THREE.Mesh(
-    new THREE.ConeGeometry(0.95, 2.2, 8, 1, true),
+    new THREE.ConeGeometry(0.88, 2.0, 10, 1, true),
     new THREE.MeshBasicMaterial({
-      color: 0xff2a85,
+      color: 0xff4d88,
       wireframe: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.42,
       side: THREE.DoubleSide
     })
   );
   energyAura.rotation.x = Math.PI / 2;
-  energyAura.position.set(0, 0.95, 0.15);
+  energyAura.position.set(0, 0.95, 0.18);
   energyAura.visible = false;
   root.add(energyAura);
 
   return {
     root,
     bodyPivot,
+    skirtPivot,
     headGroup,
-    leftTailPivot,
-    rightTailPivot,
+    leftTail,
+    rightTail,
     leftArm,
     rightArm,
     leftLeg,
     rightLeg,
+    shadowBlob,
     shieldAura,
     energyAura
   };
 }
 
+// ===================== ПРЕСЛЕДОВАТЕЛЬ («СКУФ-ПАТРУЛЬНЫЙ») =====================
 function createSkufRig() {
   const root = new THREE.Group();
-  const matCoat = new THREE.MeshStandardMaterial({ color: 0x4b4e57, roughness: 0.9 });
-  const matPants = new THREE.MeshStandardMaterial({ color: 0x262830, roughness: 0.9 });
-  const matSkin = new THREE.MeshStandardMaterial({ color: 0xd9b3a3, roughness: 0.75 });
-  const matCap = new THREE.MeshStandardMaterial({ color: 0x22252e, roughness: 0.8 });
-  const matGlow = new THREE.MeshStandardMaterial({
-    color: 0xff3b3b,
-    emissive: 0xff2244,
-    emissiveIntensity: 1.1
+  const matCoat = new THREE.MeshStandardMaterial({ color: 0x3b404d, roughness: 0.88 });
+  const matVest = new THREE.MeshStandardMaterial({ color: 0x23262e, roughness: 0.8 });
+  const matPants = new THREE.MeshStandardMaterial({ color: 0x22252e, roughness: 0.9 });
+  const matSkin = new THREE.MeshStandardMaterial({ color: 0xd9b3a3, roughness: 0.72 });
+  const matCap = new THREE.MeshStandardMaterial({ color: 0x1e212b, roughness: 0.75 });
+  const matReflective = new THREE.MeshStandardMaterial({
+    color: 0xe6e8f0,
+    emissive: 0x748ffc,
+    emissiveIntensity: 0.4
+  });
+  const matFlashlight = new THREE.MeshStandardMaterial({
+    color: 0xffe066,
+    emissive: 0xffcc33,
+    emissiveIntensity: 1.2
   });
 
-  // Массивный пузатый силуэт патрульного
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.56, 0.92, 8), matCoat);
-  torso.position.set(0, 1.02, 0);
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.45, 8, 12), matCoat);
+  torso.scale.set(1.05, 1, 1.15);
+  torso.position.set(0, 1.05, 0);
   root.add(torso);
 
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.38, 0.4), matSkin);
+  const vestStripe = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.47, 0.1, 12), matReflective);
+  vestStripe.position.set(0, 1.04, 0);
+  root.add(vestStripe);
+
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), matSkin);
   head.position.set(0, 1.66, 0);
   root.add(head);
 
-  const cap = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.14, 0.5), matCap);
-  cap.position.set(0, 1.84, -0.05);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.12, 12), matCap);
+  cap.position.set(0, 1.82, 0);
   root.add(cap);
-
-  const badge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.05), matGlow);
-  badge.position.set(0.16, 1.24, -0.47);
-  root.add(badge);
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.04, 0.18), matCap);
+  visor.position.set(0, 1.77, -0.2);
+  root.add(visor);
 
   const makeArm = (side) => {
     const pivot = new THREE.Group();
-    pivot.position.set(side * 0.54, 1.32, 0);
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), matCoat);
-    arm.position.set(0, -0.24, 0);
+    pivot.position.set(side * 0.5, 1.32, 0);
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.36, 6, 8), matCoat);
+    arm.position.set(0, -0.22, 0);
     pivot.add(arm);
     if (side === 1) {
-      const baton = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.62, 6), matGlow);
-      baton.position.set(0, -0.45, -0.28);
-      baton.rotation.x = Math.PI / 2.4;
-      pivot.add(baton);
+      const torch = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.055, 0.34, 8), matVest);
+      torch.position.set(0, -0.44, -0.18);
+      torch.rotation.x = Math.PI / 2.2;
+      pivot.add(torch);
+      const lens = new THREE.Mesh(new THREE.CircleGeometry(0.052, 8), matFlashlight);
+      lens.position.set(0, -0.46, -0.36);
+      lens.rotation.y = Math.PI;
+      pivot.add(lens);
     }
     root.add(pivot);
     return pivot;
@@ -569,9 +983,9 @@ function createSkufRig() {
 
   const makeLeg = (side) => {
     const pivot = new THREE.Group();
-    pivot.position.set(side * 0.22, 0.56, 0);
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.56, 0.24), matPants);
-    leg.position.set(0, -0.28, 0);
+    pivot.position.set(side * 0.21, 0.56, 0);
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.34, 6, 8), matPants);
+    leg.position.set(0, -0.26, 0);
     pivot.add(leg);
     root.add(pivot);
     return pivot;
@@ -582,69 +996,97 @@ function createSkufRig() {
   return { root, leftArm, rightArm, leftLeg, rightLeg };
 }
 
+// ===================== ДЕТАЛИЗИРОВАННЫЕ ПРЕПЯТСТВИЯ И ПРЕДМЕТЫ =====================
 function createObstacleMesh(type, sharedMats) {
   const group = new THREE.Group();
 
   if (type === 'low') {
-    // Низкий неоновый дорожный барьер (прыжок)
-    const body = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.72, 0.55), sharedMats.darkMetal);
-    body.position.set(0, 0.56, 0);
-    group.add(body);
+    // Бетонный дорожный блок + изношенная предупреждающая доска с фонарями
+    const base = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.44, 0.56), sharedMats.concrete);
+    base.position.set(0, 0.22, 0);
+    group.add(base);
 
-    const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.08, 0.18, 0.58), sharedMats.neonPink);
-    stripe.position.set(0, 0.82, 0);
-    group.add(stripe);
+    const board = new THREE.Mesh(new THREE.BoxGeometry(2.12, 0.38, 0.14), sharedMats.hazard);
+    board.position.set(0, 0.72, 0);
+    group.add(board);
 
-    const legL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.34, 0.5), sharedMats.darkMetal);
-    legL.position.set(-0.82, 0.17, 0);
-    group.add(legL);
+    const postGeo = new THREE.BoxGeometry(0.1, 0.5, 0.1);
+    const postL = new THREE.Mesh(postGeo, sharedMats.darkMetal);
+    postL.position.set(-0.82, 0.58, 0);
+    group.add(postL);
+    const postR = postL.clone();
+    postR.position.x = 0.82;
+    group.add(postR);
 
-    const legR = legL.clone();
-    legR.position.x = 0.82;
-    group.add(legR);
+    const beaconGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.12, 8);
+    const beaconL = new THREE.Mesh(beaconGeo, sharedMats.warmLamp);
+    beaconL.position.set(-0.82, 0.96, 0);
+    group.add(beaconL);
+    const beaconR = beaconL.clone();
+    beaconR.position.x = 0.82;
+    group.add(beaconR);
   } else if (type === 'high') {
-    // Высокая неоновая арка (подкат)
-    const pillarGeo = new THREE.BoxGeometry(0.22, 2.55, 0.42);
+    // Индустриальные строительные леса / арка с предупреждающим щитом
+    const pillarGeo = new THREE.CylinderGeometry(0.08, 0.09, 2.6, 8);
     const pillarL = new THREE.Mesh(pillarGeo, sharedMats.darkMetal);
-    pillarL.position.set(-1.04, 1.275, 0);
+    pillarL.position.set(-1.04, 1.3, 0);
     group.add(pillarL);
-
-    const pillarR = new THREE.Mesh(pillarGeo, sharedMats.darkMetal);
-    pillarR.position.set(1.04, 1.275, 0);
+    const pillarR = pillarL.clone();
+    pillarR.position.x = 1.04;
     group.add(pillarR);
 
-    const topBeam = new THREE.Mesh(new THREE.BoxGeometry(2.26, 0.92, 0.52), sharedMats.darkMetal);
-    topBeam.position.set(0, 2.02, 0);
-    group.add(topBeam);
+    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(2.26, 0.84, 0.36), sharedMats.concrete);
+    signBoard.position.set(0, 2.02, 0);
+    group.add(signBoard);
 
-    const laserBar = new THREE.Mesh(new THREE.BoxGeometry(2.02, 0.24, 0.58), sharedMats.neonPurple);
-    laserBar.position.set(0, 1.44, 0);
-    group.add(laserBar);
+    const hazardStrip = new THREE.Mesh(new THREE.BoxGeometry(2.22, 0.22, 0.4), sharedMats.hazard);
+    hazardStrip.position.set(0, 1.52, 0);
+    group.add(hazardStrip);
+
+    const accentTrim = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.12, 0.4), sharedMats.accentGlow);
+    accentTrim.position.set(0, 2.04, 0);
+    group.add(accentTrim);
   } else {
-    // Вагон метро / ночной грузовик во всю полосу (смена полосы)
-    const hull = new THREE.Mesh(new THREE.BoxGeometry(2.15, 2.65, 8.6), sharedMats.trainBody);
-    hull.position.set(0, 1.42, 0);
+    // Детализированный вагон метро / ночной грузовик
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(2.15, 2.48, 8.6), sharedMats.trainSide);
+    hull.position.set(0, 1.48, 0);
     group.add(hull);
 
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.22, 8.2), sharedMats.darkMetal);
+    // Ходовая тележка и бампер
+    const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.98, 0.34, 8.2), sharedMats.darkMetal);
+    chassis.position.set(0, 0.18, 0);
+    group.add(chassis);
+
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.24, 8.4), sharedMats.concrete);
     roof.position.set(0, 2.82, 0);
     group.add(roof);
 
-    const frontGlass = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.95, 0.12), sharedMats.neonCyan);
-    frontGlass.position.set(0, 1.85, 4.32);
-    group.add(frontGlass);
+    // Кондиционеры на крыше вагона
+    const acGeo = new THREE.BoxGeometry(1.1, 0.22, 1.6);
+    const ac1 = new THREE.Mesh(acGeo, sharedMats.darkMetal);
+    ac1.position.set(0, 3.02, -2.0);
+    group.add(ac1);
+    const ac2 = ac1.clone();
+    ac2.position.z = 2.0;
+    group.add(ac2);
 
-    const headlightL = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.22, 0.12), sharedMats.neonPink);
-    headlightL.position.set(-0.68, 0.72, 4.32);
-    group.add(headlightL);
+    // Лобовое стекло и теплые фары
+    const windshield = new THREE.Mesh(new THREE.BoxGeometry(1.78, 0.92, 0.1), sharedMats.glassDark);
+    windshield.position.set(0, 1.92, 4.32);
+    group.add(windshield);
 
-    const headlightR = headlightL.clone();
-    headlightR.position.x = 0.68;
-    group.add(headlightR);
+    const routeSign = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.22, 0.1), sharedMats.accentGlow);
+    routeSign.position.set(0, 2.52, 4.32);
+    group.add(routeSign);
 
-    const sideStripe = new THREE.Mesh(new THREE.BoxGeometry(2.19, 0.24, 8.2), sharedMats.neonPurple);
-    sideStripe.position.set(0, 1.05, 0);
-    group.add(sideStripe);
+    const lampGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.1, 10);
+    const hlL = new THREE.Mesh(lampGeo, sharedMats.warmLamp);
+    hlL.rotation.x = Math.PI / 2;
+    hlL.position.set(-0.68, 0.78, 4.32);
+    group.add(hlL);
+    const hlR = hlL.clone();
+    hlR.position.x = 0.68;
+    group.add(hlR);
   }
 
   group.visible = false;
@@ -655,55 +1097,51 @@ function createItemMesh(type, sharedMats) {
   const group = new THREE.Group();
 
   if (type === 'mediator') {
-    // Медиатор (треугольная неоновая призма)
-    const pick = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.12, 3), sharedMats.neonPink);
+    const pick = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.1, 3), sharedMats.accentGlow);
     pick.rotation.x = Math.PI / 2;
     group.add(pick);
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.12, 3), sharedMats.silver);
+    core.rotation.x = Math.PI / 2;
+    group.add(core);
   } else if (type === 'energy') {
-    // Банка энергетика
-    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.76, 10), sharedMats.neonPink);
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.72, 12), sharedMats.accentGlow);
     group.add(can);
-    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.24, 10), sharedMats.neonCyan);
+    const topRim = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.08, 12), sharedMats.silver);
+    topRim.position.y = 0.38;
+    group.add(topRim);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.22, 12), sharedMats.secondaryGlow);
     group.add(band);
   } else if (type === 'shield') {
-    // Чокер с шипами
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.09, 8, 16), sharedMats.darkMetal);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.085, 8, 16), sharedMats.darkMetal);
     group.add(ring);
-    const glowRing = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.035, 6, 16), sharedMats.neonPurple);
-    glowRing.position.z = 0.06;
-    group.add(glowRing);
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI * 2;
-      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 5), sharedMats.neonCyan);
-      spike.position.set(Math.cos(a) * 0.46, Math.sin(a) * 0.46, 0);
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.2, 5), sharedMats.silver);
+      spike.position.set(Math.cos(a) * 0.44, Math.sin(a) * 0.44, 0);
       spike.rotation.z = a - Math.PI / 2;
       group.add(spike);
     }
   } else if (type === 'slowmo') {
-    // Тамагочи (яйцевидный брелок с экраном)
-    const shell = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 10), sharedMats.neonCyan);
-    shell.scale.set(0.88, 1.12, 0.55);
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(0.36, 12, 10), sharedMats.secondaryGlow);
+    shell.scale.set(0.86, 1.12, 0.52);
     group.add(shell);
-    const screen = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.3, 0.25), sharedMats.darkMetal);
+    const screen = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.28, 0.22), sharedMats.warmLamp);
     screen.position.set(0, 0.05, 0.12);
     group.add(screen);
   } else {
-    // Сюжетная кассета
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.62, 0.2), sharedMats.darkMetal);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.58, 0.18), sharedMats.darkMetal);
     group.add(body);
-    const label = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.34, 0.23), sharedMats.neonPink);
+    const label = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.32, 0.21), sharedMats.accentGlow);
     label.position.y = 0.05;
     group.add(label);
-    const reelGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.25, 10);
-    const reelL = new THREE.Mesh(reelGeo, sharedMats.neonCyan);
+    const reelGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.23, 10);
+    const reelL = new THREE.Mesh(reelGeo, sharedMats.silver);
     reelL.rotation.x = Math.PI / 2;
     reelL.position.set(-0.2, 0.05, 0);
     group.add(reelL);
     const reelR = reelL.clone();
     reelR.position.x = 0.2;
     group.add(reelR);
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.03, 6, 20), sharedMats.neonPurple);
-    group.add(halo);
   }
 
   group.visible = false;
@@ -717,9 +1155,8 @@ class AltRunnerGame {
     this.sound = new SoundEngine();
 
     this.dom = this.cacheDom();
-    this.state = 'hub'; // 'hub' | 'playing' | 'paused' | 'vn' | 'endings'
+    this.state = 'hub';
 
-    // Физика игрока
     this.laneIndex = 1;
     this.playerX = LANES[1];
     this.playerY = 0;
@@ -729,12 +1166,10 @@ class AltRunnerGame {
     this.invulnTimer = 0;
     this.animClock = 0;
 
-    // Преследователь («Скуф-патрульный»)
     this.pursuerTimer = 0;
     this.pursuerZ = 12;
     this.pursuerX = 0;
 
-    // Параметры забега
     this.runDistance = 0;
     this.runMediators = 0;
     this.runSpeed = BASE_RUN_SPEED;
@@ -743,36 +1178,31 @@ class AltRunnerGame {
     this.cassetteOnTrack = false;
     this.cameraShake = 0;
 
-    // Баффы
     this.buffs = {
       energy: { active: false, remaining: 0, max: 6 },
       shield: { active: false, remaining: 0, max: 8 },
       slowmo: { active: false, remaining: 0, max: 5.5 }
     };
 
-    // Визуальная новелла (печатный текст)
     this.vnState = {
       cassette: null,
       fullText: '',
       charIndex: 0,
       typingTimer: null,
       isTyping: false,
-      phase: 'prompt', // 'prompt' | 'reply'
+      phase: 'prompt',
       pendingFinale: null,
       pendingUnlockChapter: null
     };
 
-    // Переиспользуемые объекты коллизий (ноль аллокаций в игровом цикле)
     this.playerBox = new THREE.Box3();
     this.tempBox = new THREE.Box3();
-    this.tempVec = new THREE.Vector3();
 
-    // Трекинг свайпов
     this.touchStartX = 0;
     this.touchStartY = 0;
-    this.touchStartTime = 0;
     this.touchHandled = false;
 
+    this.textures = createProceduralTextures();
     this.initThree();
     this.initWorldPools();
     this.applyChapterTheme(this.story.currentChapter);
@@ -855,62 +1285,97 @@ class AltRunnerGame {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setSize(window.innerWidth, window.innerHeight, false);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.12;
+    this.renderer.toneMappingExposure = 1.18;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0b0714);
-    this.scene.fog = new THREE.FogExp2(0x0b0714, 0.0155);
+    this.scene.background = new THREE.Color(0x101320);
+    this.scene.fog = new THREE.FogExp2(0x131624, 0.0135);
 
     this.camera = new THREE.PerspectiveCamera(
-      62,
+      60,
       window.innerWidth / window.innerHeight,
       0.1,
-      190
+      220
     );
-    this.camera.position.set(0, 4.5, 8.2);
-    this.camera.lookAt(0, 1.4, -10);
+    this.camera.position.set(0, 4.2, 7.6);
+    this.camera.lookAt(0, 1.35, -10);
 
-    // Освещение
-    this.hemiLight = new THREE.HemisphereLight(0xe0aaff, 0x160a24, 1.05);
+    // Сбалансированное ночное освещение (луна + теплый уличный свет + контровой блик)
+    this.hemiLight = new THREE.HemisphereLight(0x8ea4d2, 0x1d1826, 1.15);
     this.scene.add(this.hemiLight);
 
-    this.dirLight = new THREE.DirectionalLight(0xff99c8, 1.25);
-    this.dirLight.position.set(6, 14, 10);
-    this.scene.add(this.dirLight);
+    this.moonLight = new THREE.DirectionalLight(0xc8dcff, 1.1);
+    this.moonLight.position.set(-10, 22, 12);
+    this.scene.add(this.moonLight);
 
-    this.accentLight = new THREE.PointLight(0xff2a85, 3.2, 26);
-    this.accentLight.position.set(0, 3.5, 2.5);
-    this.scene.add(this.accentLight);
+    this.warmStreetLight = new THREE.PointLight(0xffc373, 2.8, 28);
+    this.warmStreetLight.position.set(3.8, 5.2, 2.5);
+    this.scene.add(this.warmStreetLight);
 
-    // Общие материалы для пула (обновляются по палитре главы)
+    this.rimLight = new THREE.PointLight(0xe64980, 1.5, 18);
+    this.rimLight.position.set(-3.2, 2.8, -3.5);
+    this.scene.add(this.rimLight);
+
+    // Общие материалы с фактурами
     this.sharedMats = {
-      darkMetal: new THREE.MeshStandardMaterial({ color: 0x161221, roughness: 0.65, metalness: 0.35 }),
-      trainBody: new THREE.MeshStandardMaterial({ color: 0x201833, roughness: 0.55, metalness: 0.3 }),
-      neonPink: new THREE.MeshStandardMaterial({
-        color: 0xff2a85,
-        emissive: 0xff2a85,
-        emissiveIntensity: 0.95,
-        roughness: 0.3
+      road: new THREE.MeshStandardMaterial({
+        map: this.textures.asphalt,
+        roughness: 0.72,
+        metalness: 0.08
       }),
-      neonPurple: new THREE.MeshStandardMaterial({
-        color: 0x9d4edd,
-        emissive: 0x9d4edd,
-        emissiveIntensity: 0.9,
-        roughness: 0.3
+      sidewalk: new THREE.MeshStandardMaterial({
+        map: this.textures.sidewalk,
+        roughness: 0.9
       }),
-      neonCyan: new THREE.MeshStandardMaterial({
-        color: 0x56cfe1,
-        emissive: 0x56cfe1,
-        emissiveIntensity: 0.9,
-        roughness: 0.3
+      curb: new THREE.MeshStandardMaterial({ color: 0x3b3f4f, roughness: 0.85 }),
+      building: new THREE.MeshStandardMaterial({
+        map: this.textures.buildingFacade,
+        roughness: 0.86
       }),
-      building: new THREE.MeshStandardMaterial({ color: 0x110c1c, roughness: 0.9 }),
-      road: new THREE.MeshStandardMaterial({ color: 0x0d0a14, roughness: 0.92 }),
-      railLine: new THREE.MeshBasicMaterial({ color: 0x9d4edd })
+      concrete: new THREE.MeshStandardMaterial({ color: 0x323544, roughness: 0.9 }),
+      darkMetal: new THREE.MeshStandardMaterial({ color: 0x1e202b, roughness: 0.5, metalness: 0.45 }),
+      silver: new THREE.MeshStandardMaterial({ color: 0xd8dce8, roughness: 0.25, metalness: 0.85 }),
+      glassDark: new THREE.MeshStandardMaterial({ color: 0x151b29, roughness: 0.15, metalness: 0.7 }),
+      trainSide: new THREE.MeshStandardMaterial({
+        map: this.textures.trainSide,
+        roughness: 0.52,
+        metalness: 0.25
+      }),
+      hazard: new THREE.MeshStandardMaterial({
+        map: this.textures.hazard,
+        roughness: 0.68
+      }),
+      warmLamp: new THREE.MeshStandardMaterial({
+        color: 0xffd89b,
+        emissive: 0xffb85c,
+        emissiveIntensity: 1.4
+      }),
+      lampCone: new THREE.MeshBasicMaterial({
+        color: 0xffcf87,
+        transparent: true,
+        opacity: 0.09,
+        depthWrite: false,
+        side: THREE.DoubleSide
+      }),
+      accentGlow: new THREE.MeshStandardMaterial({
+        color: 0xe64980,
+        emissive: 0xe64980,
+        emissiveIntensity: 0.75,
+        roughness: 0.35
+      }),
+      secondaryGlow: new THREE.MeshStandardMaterial({
+        color: 0x845ef7,
+        emissive: 0x845ef7,
+        emissiveIntensity: 0.7,
+        roughness: 0.35
+      })
     };
 
-    // Героиня и преследователь
-    this.altushka = createAltushkaRig();
+    // Ночное небо: луна + далекие звезды + силуэт горизонта
+    this.initBackdrop();
+
+    // Персонажи
+    this.altushka = createAltushkaRig(this.textures);
     this.scene.add(this.altushka.root);
 
     this.skuf = createSkufRig();
@@ -918,68 +1383,180 @@ class AltRunnerGame {
     this.scene.add(this.skuf.root);
   }
 
+  initBackdrop() {
+    const skyGroup = new THREE.Group();
+
+    // Луна в дымке
+    const moon = new THREE.Mesh(
+      new THREE.CircleGeometry(7.5, 24),
+      new THREE.MeshBasicMaterial({ color: 0xf4ecff, fog: false })
+    );
+    moon.position.set(-22, 46, -170);
+    skyGroup.add(moon);
+
+    const moonHalo = new THREE.Mesh(
+      new THREE.CircleGeometry(14, 24),
+      new THREE.MeshBasicMaterial({
+        color: 0xb197fc,
+        transparent: true,
+        opacity: 0.14,
+        fog: false,
+        depthWrite: false
+      })
+    );
+    moonHalo.position.set(-22, 46, -171);
+    skyGroup.add(moonHalo);
+
+    // Звезды
+    const starPositions = [];
+    for (let i = 0; i < 120; i++) {
+      starPositions.push(
+        (Math.random() - 0.5) * 240,
+        18 + Math.random() * 75,
+        -160 - Math.random() * 30
+      );
+    }
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    const stars = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({ color: 0xe8e4ff, size: 0.7, fog: false })
+    );
+    skyGroup.add(stars);
+
+    // Силуэт далеких высоток и телебашни на горизонте
+    const skylineMat = new THREE.MeshBasicMaterial({ color: 0x16192a, fog: false });
+    for (let i = 0; i < 18; i++) {
+      const w = 6 + (i % 4) * 3;
+      const h = 14 + ((i * 11) % 28);
+      const tower = new THREE.Mesh(new THREE.BoxGeometry(w, h, 4), skylineMat);
+      tower.position.set(-95 + i * 11.2, h / 2 - 2, -165);
+      skyGroup.add(tower);
+    }
+    // Шпиль телебашни вдали
+    const tvTower = new THREE.Mesh(new THREE.ConeGeometry(2.8, 56, 6), skylineMat);
+    tvTower.position.set(16, 26, -166);
+    skyGroup.add(tvTower);
+    const tvBeacon = new THREE.Mesh(
+      new THREE.SphereGeometry(0.75, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xff4d6d, fog: false })
+    );
+    tvBeacon.position.set(16, 54, -166);
+    skyGroup.add(tvBeacon);
+
+    this.scene.add(skyGroup);
+  }
+
   initWorldPools() {
-    // Полотно трассы
-    const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(10.5, TRACK_LENGTH), this.sharedMats.road);
+    // Полотно трассы с текстурой мокрого асфальта
+    const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(9.2, TRACK_LENGTH), this.sharedMats.road);
     roadMesh.rotation.x = -Math.PI / 2;
-    roadMesh.position.set(0, 0, -TRACK_LENGTH / 2 + 20);
+    roadMesh.position.set(0, 0, -TRACK_LENGTH / 2 + 22);
     this.scene.add(roadMesh);
 
-    // Неоновые разделители 3 полос + бордюры
-    const lineXs = [-4.2, -1.25, 1.25, 4.2];
-    const lineGeo = new THREE.PlaneGeometry(0.11, TRACK_LENGTH);
-    for (const lx of lineXs) {
-      const strip = new THREE.Mesh(
-        lineGeo,
-        Math.abs(lx) > 3 ? this.sharedMats.neonPink : this.sharedMats.railLine
-      );
-      strip.rotation.x = -Math.PI / 2;
-      strip.position.set(lx, 0.02, -TRACK_LENGTH / 2 + 20);
-      this.scene.add(strip);
+    // Тротуары и бордюры по бокам
+    const swGeo = new THREE.BoxGeometry(4.2, 0.24, TRACK_LENGTH);
+    const curbGeo = new THREE.BoxGeometry(0.32, 0.3, TRACK_LENGTH);
+    for (const side of [-1, 1]) {
+      const sw = new THREE.Mesh(swGeo, this.sharedMats.sidewalk);
+      sw.position.set(side * 6.8, 0.12, -TRACK_LENGTH / 2 + 22);
+      this.scene.add(sw);
+
+      const curb = new THREE.Mesh(curbGeo, this.sharedMats.curb);
+      curb.position.set(side * 4.65, 0.15, -TRACK_LENGTH / 2 + 22);
+      this.scene.add(curb);
     }
 
-    // Пул бегущих шпал/поперечных неоновых полос для ощущения скорости
-    this.trackBars = [];
-    const barGeo = new THREE.BoxGeometry(8.4, 0.04, 0.16);
-    for (let i = 0; i < 24; i++) {
-      const bar = new THREE.Mesh(barGeo, this.sharedMats.railLine);
-      bar.position.set(0, 0.015, 12 - i * 7);
-      this.scene.add(bar);
-      this.trackBars.push(bar);
+    // Пул уличных фонарей вдоль тротуаров (создают глубину и теплый городской уют)
+    this.streetLamps = [];
+    const poleGeo = new THREE.CylinderGeometry(0.08, 0.11, 6.2, 8);
+    const armGeo = new THREE.BoxGeometry(1.5, 0.1, 0.1);
+    const headGeo = new THREE.BoxGeometry(0.55, 0.14, 0.26);
+    const coneGeo = new THREE.ConeGeometry(2.2, 5.8, 12, 1, true);
+    for (let i = 0; i < 16; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const zSlot = 12 - Math.floor(i / 2) * 20;
+      const lamp = new THREE.Group();
+
+      const pole = new THREE.Mesh(poleGeo, this.sharedMats.darkMetal);
+      pole.position.set(0, 3.1, 0);
+      lamp.add(pole);
+
+      const arm = new THREE.Mesh(armGeo, this.sharedMats.darkMetal);
+      arm.position.set(-side * 0.72, 6.1, 0);
+      lamp.add(arm);
+
+      const head = new THREE.Mesh(headGeo, this.sharedMats.warmLamp);
+      head.position.set(-side * 1.35, 6.02, 0);
+      lamp.add(head);
+
+      const cone = new THREE.Mesh(coneGeo, this.sharedMats.lampCone);
+      cone.position.set(-side * 1.35, 3.1, 0);
+      lamp.add(cone);
+
+      lamp.position.set(side * 5.2, 0.24, zSlot);
+      this.scene.add(lamp);
+      this.streetLamps.push(lamp);
     }
 
-    // Пул зданий с неоновыми вывесками (левая и правая стороны)
+    // Пул детализированных городских зданий (панельки, балконы, антенны, локальные вывески)
     this.buildings = [];
     const bldGeo = new THREE.BoxGeometry(1, 1, 1);
-    const signGeo = new THREE.BoxGeometry(0.16, 1.4, 2.8);
-    const winGeo = new THREE.BoxGeometry(0.12, 0.55, 0.9);
-    for (let i = 0; i < 36; i++) {
+    const balconyGeo = new THREE.BoxGeometry(0.55, 0.9, 2.2);
+    const acGeo = new THREE.BoxGeometry(0.35, 0.42, 0.55);
+    const signGeo = new THREE.BoxGeometry(0.14, 0.9, 2.4);
+    const roofBoxGeo = new THREE.BoxGeometry(2.2, 1.2, 2.2);
+
+    for (let i = 0; i < 32; i++) {
       const side = i % 2 === 0 ? -1 : 1;
-      const zSlot = 14 - Math.floor(i / 2) * 9.5;
+      const zSlot = 16 - Math.floor(i / 2) * 10.5;
       const group = new THREE.Group();
 
-      const width = 4.6 + (i % 3) * 1.4;
-      const height = 8 + ((i * 7) % 14);
-      const depth = 7.4;
+      const width = 5.4 + (i % 3) * 1.5;
+      const height = 10 + ((i * 7) % 15);
+      const depth = 8.4;
 
       const body = new THREE.Mesh(bldGeo, this.sharedMats.building);
       body.scale.set(width, height, depth);
       body.position.set(0, height / 2, 0);
       group.add(body);
 
-      const signMat = i % 3 === 0 ? this.sharedMats.neonPink : i % 3 === 1 ? this.sharedMats.neonPurple : this.sharedMats.neonCyan;
-      const sign = new THREE.Mesh(signGeo, signMat);
-      sign.position.set(-side * (width / 2 + 0.08), 3.6 + (i % 4) * 1.6, 0);
-      group.add(sign);
+      // Крыша-парапет и техпостройка
+      const parapet = new THREE.Mesh(bldGeo, this.sharedMats.concrete);
+      parapet.scale.set(width + 0.2, 0.45, depth + 0.2);
+      parapet.position.set(0, height + 0.2, 0);
+      group.add(parapet);
 
-      // Несколько светящихся окон
-      for (let w = 0; w < 3; w++) {
-        const win = new THREE.Mesh(winGeo, w === 1 ? this.sharedMats.neonPurple : this.sharedMats.neonPink);
-        win.position.set(-side * (width / 2 + 0.04), 2.2 + w * 2.2, (w - 1) * 1.9);
-        group.add(win);
+      if (i % 2 === 0) {
+        const roofBox = new THREE.Mesh(roofBoxGeo, this.sharedMats.concrete);
+        roofBox.position.set(0, height + 0.95, 0);
+        group.add(roofBox);
       }
 
-      group.position.set(side * (6.2 + width / 2), 0, zSlot);
+      // Выступающие балконы на фасаде
+      const faceX = -side * (width / 2);
+      for (let b = 0; b < 2; b++) {
+        const bal = new THREE.Mesh(balconyGeo, this.sharedMats.concrete);
+        bal.position.set(faceX - side * 0.25, 4.6 + b * 3.4, (b === 0 ? -1.8 : 1.9));
+        group.add(bal);
+      }
+
+      // Наружный блок кондиционера
+      const ac = new THREE.Mesh(acGeo, this.sharedMats.curb);
+      ac.position.set(faceX - side * 0.16, 3.2, 0);
+      group.add(ac);
+
+      // Умеренные вывески (только на каждом 3-м доме, без перегруза неоном)
+      if (i % 3 === 0) {
+        const sign = new THREE.Mesh(
+          signGeo,
+          i % 6 === 0 ? this.sharedMats.accentGlow : this.sharedMats.secondaryGlow
+        );
+        sign.position.set(faceX - side * 0.1, 2.8, 0);
+        group.add(sign);
+      }
+
+      group.position.set(side * (8.4 + width / 2), 0, zSlot);
       this.scene.add(group);
       this.buildings.push({ group, side, width });
     }
@@ -1029,11 +1606,14 @@ class AltRunnerGame {
     addItems('slowmo', 4);
     addItems('cassette', 2);
 
-    // Пул неоновых осколков (эффект разрушения препятствий / сбора предметов)
+    // Пул частиц
     this.particles = [];
-    const partGeo = new THREE.BoxGeometry(0.24, 0.24, 0.24);
+    const partGeo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
     for (let i = 0; i < 36; i++) {
-      const mesh = new THREE.Mesh(partGeo, i % 2 === 0 ? this.sharedMats.neonPink : this.sharedMats.neonCyan);
+      const mesh = new THREE.Mesh(
+        partGeo,
+        i % 2 === 0 ? this.sharedMats.accentGlow : this.sharedMats.warmLamp
+      );
       mesh.visible = false;
       this.scene.add(mesh);
       this.particles.push({
@@ -1048,18 +1628,24 @@ class AltRunnerGame {
   }
 
   applyChapterTheme(chapterId) {
-    const cfg = this.story.getChapterConfig(chapterId);
-    const { fog, accent, secondary, grid } = cfg.palette;
+    const theme = CHAPTER_THEMES[chapterId] || CHAPTER_THEMES[1];
+    this.scene.background.setHex(theme.sky);
+    this.scene.fog.color.setHex(theme.fog);
+    this.scene.fog.density = theme.fogDensity;
 
-    this.scene.background.setHex(fog);
-    this.scene.fog.color.setHex(fog);
-    this.accentLight.color.setHex(accent);
+    this.hemiLight.color.setHex(theme.hemiSky);
+    this.hemiLight.groundColor.setHex(theme.hemiGround);
+    this.warmStreetLight.color.setHex(theme.lamp);
+    this.rimLight.color.setHex(theme.accent);
 
-    this.sharedMats.neonPink.color.setHex(accent);
-    this.sharedMats.neonPink.emissive.setHex(accent);
-    this.sharedMats.neonPurple.color.setHex(secondary);
-    this.sharedMats.neonPurple.emissive.setHex(secondary);
-    this.sharedMats.railLine.color.setHex(grid);
+    this.sharedMats.warmLamp.color.setHex(theme.lamp);
+    this.sharedMats.warmLamp.emissive.setHex(theme.lamp);
+    this.sharedMats.lampCone.color.setHex(theme.lamp);
+
+    this.sharedMats.accentGlow.color.setHex(theme.accent);
+    this.sharedMats.accentGlow.emissive.setHex(theme.accent);
+    this.sharedMats.secondaryGlow.color.setHex(theme.secondary);
+    this.sharedMats.secondaryGlow.emissive.setHex(theme.secondary);
   }
 
   // ===================== ОБРАБОТЧИКИ СОБЫТИЙ =====================
@@ -1071,7 +1657,6 @@ class AltRunnerGame {
       this.renderer.setSize(window.innerWidth, window.innerHeight, false);
     });
 
-    // Свайпы (Android touchstart / touchmove / touchend)
     const canvas = this.dom.canvas;
     canvas.addEventListener(
       'touchstart',
@@ -1081,7 +1666,6 @@ class AltRunnerGame {
         const t = e.touches[0];
         this.touchStartX = t.clientX;
         this.touchStartY = t.clientY;
-        this.touchStartTime = performance.now();
         this.touchHandled = false;
       },
       { passive: true }
@@ -1094,10 +1678,8 @@ class AltRunnerGame {
         const t = e.touches[0];
         const dx = t.clientX - this.touchStartX;
         const dy = t.clientY - this.touchStartY;
-        const absX = Math.abs(dx);
-        const absY = Math.abs(dy);
-        if (Math.max(absX, absY) >= 28) {
-          this.handleSwipeDirection(dx, dy, absX, absY);
+        if (Math.max(Math.abs(dx), Math.abs(dy)) >= 28) {
+          this.handleSwipeDirection(dx, dy, Math.abs(dx), Math.abs(dy));
           this.touchHandled = true;
         }
       },
@@ -1111,29 +1693,22 @@ class AltRunnerGame {
         const t = e.changedTouches[0];
         const dx = t.clientX - this.touchStartX;
         const dy = t.clientY - this.touchStartY;
-        const absX = Math.abs(dx);
-        const absY = Math.abs(dy);
-        if (Math.max(absX, absY) >= 22) {
-          this.handleSwipeDirection(dx, dy, absX, absY);
+        if (Math.max(Math.abs(dx), Math.abs(dy)) >= 22) {
+          this.handleSwipeDirection(dx, dy, Math.abs(dx), Math.abs(dy));
         }
       },
       { passive: true }
     );
 
-    // Клавиатура (WASD / Стрелки / Пауза / Mute)
     window.addEventListener('keydown', (e) => {
       if (e.code === 'KeyM') {
         this.toggleMuteUI();
         return;
       }
       if (e.code === 'Escape' || e.code === 'KeyP') {
-        if (this.state === 'playing') {
-          this.pauseRun();
-        } else if (this.state === 'paused') {
-          this.resumeRun();
-        } else if (this.state === 'endings') {
-          this.closeEndings();
-        }
+        if (this.state === 'playing') this.pauseRun();
+        else if (this.state === 'paused') this.resumeRun();
+        else if (this.state === 'endings') this.closeEndings();
         return;
       }
       if (this.state !== 'playing') return;
@@ -1164,7 +1739,6 @@ class AltRunnerGame {
       }
     });
 
-    // HUD кнопки
     this.dom.btnMute.addEventListener('click', () => this.toggleMuteUI());
     this.dom.btnPause.addEventListener('click', () => {
       if (this.state === 'playing') {
@@ -1173,7 +1747,6 @@ class AltRunnerGame {
       }
     });
 
-    // Хаб кнопки
     this.dom.btnRun.addEventListener('click', () => {
       this.sound.ensureContext();
       this.sound.playClick();
@@ -1197,11 +1770,9 @@ class AltRunnerGame {
       }
     });
 
-    const upgradeBtns = [this.dom.btnUpgEnergy, this.dom.btnUpgShield, this.dom.btnUpgSlowmo];
-    for (const btn of upgradeBtns) {
+    for (const btn of [this.dom.btnUpgEnergy, this.dom.btnUpgShield, this.dom.btnUpgSlowmo]) {
       btn.addEventListener('click', () => {
-        const key = btn.dataset.upgrade;
-        const res = this.story.buyUpgrade(key);
+        const res = this.story.buyUpgrade(btn.dataset.upgrade);
         if (res.success) {
           this.sound.playMediator();
           this.refreshHubUI();
@@ -1224,7 +1795,6 @@ class AltRunnerGame {
       this.closeEndings();
     });
 
-    // Тап по диалоговому окну ускоряет печатный текст
     this.dom.vnText.addEventListener('click', () => {
       if (this.state === 'vn' && this.vnState.isTyping) {
         this.finishTypewriterImmediately();
@@ -1233,13 +1803,9 @@ class AltRunnerGame {
   }
 
   handleSwipeDirection(dx, dy, absX, absY) {
-    if (absX > absY) {
-      this.moveLane(dx > 0 ? 1 : -1);
-    } else if (dy < 0) {
-      this.triggerJump();
-    } else {
-      this.triggerSlide();
-    }
+    if (absX > absY) this.moveLane(dx > 0 ? 1 : -1);
+    else if (dy < 0) this.triggerJump();
+    else this.triggerSlide();
   }
 
   toggleMuteUI() {
@@ -1268,9 +1834,7 @@ class AltRunnerGame {
   }
 
   triggerSlide() {
-    if (!this.isGrounded) {
-      this.playerVelY = FAST_FALL_VELOCITY;
-    }
+    if (!this.isGrounded) this.playerVelY = FAST_FALL_VELOCITY;
     this.slideTimer = SLIDE_DURATION;
     this.sound.playSlide();
   }
@@ -1379,7 +1943,7 @@ class AltRunnerGame {
     this.openHub(false, summary);
   }
 
-  // ===================== СПАВНЕР ПРЕПЯТСТВИЙ И ПРЕДМЕТОВ =====================
+  // ===================== СПАВНЕР =====================
   acquireObstacle(type) {
     return this.obstaclePool.find((o) => !o.active && o.type === type) || null;
   }
@@ -1406,20 +1970,14 @@ class AltRunnerGame {
 
   spawnWave() {
     const zBase = SPAWN_Z;
-    const blockedLanes = new Set();
-
-    // Решаем, нужно ли заспавнить сюжетную кассету
     const nextCassette = this.story.getNextUncollectedCassette();
     const shouldSpawnCassette =
       Boolean(nextCassette) && !this.cassetteOnTrack && this.runDistance >= this.nextCassetteAt;
 
-    // 1. Гарантируем минимум 1 свободную или преодолимую полосу
     const openLane = Math.floor(Math.random() * 3);
-
-    // 2. Спавн препятствий на 1–2 полосах
     const patternRoll = Math.random();
+
     if (patternRoll < 0.42) {
-      // 1–2 вагона на случайных полосах (кроме openLane)
       const candidates = [0, 1, 2].filter((l) => l !== openLane);
       const trainCount = Math.random() < 0.45 ? 2 : 1;
       for (let i = 0; i < trainCount; i++) {
@@ -1433,10 +1991,8 @@ class AltRunnerGame {
           obs.mesh.position.set(LANES[lane], 0, obs.z);
           obs.mesh.rotation.set(0, 0, 0);
           obs.mesh.visible = true;
-          blockedLanes.add(lane);
         }
       }
-      // На свободной полосе иногда ставим барьер или арку (кроме спавна кассеты)
       if (!shouldSpawnCassette && Math.random() < 0.55) {
         const type = Math.random() < 0.5 ? 'low' : 'high';
         const obs = this.acquireObstacle(type);
@@ -1451,7 +2007,6 @@ class AltRunnerGame {
         }
       }
     } else {
-      // Комбинация из низких барьеров и высоких арок
       const count = Math.random() < 0.6 ? 2 : 3;
       const lanes = [0, 1, 2].sort(() => Math.random() - 0.5).slice(0, count);
       for (const lane of lanes) {
@@ -1470,7 +2025,6 @@ class AltRunnerGame {
       }
     }
 
-    // 3. Спавн кассеты или баффа / линии медиаторов на безопасной полосе
     if (shouldSpawnCassette) {
       const cass = this.acquireItem('cassette');
       if (cass) {
@@ -1486,9 +2040,7 @@ class AltRunnerGame {
       return;
     }
 
-    // Шанс спавна баффа
-    const buffRoll = Math.random();
-    if (buffRoll < 0.16) {
+    if (Math.random() < 0.16) {
       const buffTypes = ['energy', 'shield', 'slowmo'];
       const chosen = buffTypes[Math.floor(Math.random() * buffTypes.length)];
       const item = this.acquireItem(chosen);
@@ -1501,7 +2053,6 @@ class AltRunnerGame {
         item.mesh.visible = true;
       }
     } else {
-      // Линия медиаторов (3–5 штук)
       const count = 3 + Math.floor(Math.random() * 3);
       const isJumpArc = Math.random() < 0.35;
       for (let i = 0; i < count; i++) {
@@ -1523,18 +2074,11 @@ class AltRunnerGame {
     const worldDt = rawDt * slowScale;
     this.animClock += worldDt;
 
-    // Обновление таймеров баффов (в реальном времени)
     this.updateBuffTimers(rawDt);
+    if (this.invulnTimer > 0) this.invulnTimer = Math.max(0, this.invulnTimer - rawDt);
 
-    if (this.invulnTimer > 0) {
-      this.invulnTimer = Math.max(0, this.invulnTimer - rawDt);
-    }
-
-    // Скорость и темп музыки
     this.runSpeed = Math.min(MAX_RUN_SPEED, this.runSpeed + SPEED_ACCEL_PER_SEC * worldDt);
-    const energyMult = this.buffs.energy.active
-      ? this.story.getUpgradeEffect('energy').speedMultiplier
-      : 1;
+    const energyMult = this.buffs.energy.active ? this.story.getUpgradeEffect('energy').speedMultiplier : 1;
     const effectiveSpeed = this.runSpeed * energyMult;
 
     const musicTempo = this.buffs.energy.active
@@ -1544,11 +2088,13 @@ class AltRunnerGame {
         : 1 + (this.runSpeed - BASE_RUN_SPEED) / 90;
     this.sound.setTempoMultiplier(musicTempo);
 
-    // Продвижение дистанции
     const dz = effectiveSpeed * worldDt;
     this.runDistance += dz * 0.85;
 
-    // Проверка авто-завершения главы, если игрок уже собрал все 3 кассеты и добил дистанцию
+    // Скролл текстуры асфальта и тротуара (реалистичное движение дороги)
+    this.textures.asphalt.offset.y += dz * 0.1;
+    this.textures.sidewalk.offset.y += dz * 0.13;
+
     const chProg = this.story.getChapterProgress();
     if (
       chProg.cassettesCollected >= chProg.cassettesTotal &&
@@ -1558,11 +2104,9 @@ class AltRunnerGame {
       return;
     }
 
-    // Плавный переход между полосами
     const targetX = LANES[this.laneIndex];
     this.playerX += (targetX - this.playerX) * Math.min(1, LANE_SWITCH_SPEED * rawDt);
 
-    // Прыжок и гравитация
     if (!this.isGrounded) {
       this.playerVelY += GRAVITY * worldDt;
       this.playerY += this.playerVelY * worldDt;
@@ -1573,45 +2117,32 @@ class AltRunnerGame {
       }
     }
 
-    // Подкат
-    if (this.slideTimer > 0) {
-      this.slideTimer = Math.max(0, this.slideTimer - worldDt);
-    }
+    if (this.slideTimer > 0) this.slideTimer = Math.max(0, this.slideTimer - worldDt);
 
-    // Анимация Альтушки
     this.animateAltushka(effectiveSpeed);
+    this.updatePursuer(rawDt);
 
-    // Анимация и позиция преследователя («Скуф-патрульный»)
-    this.updatePursuer(rawDt, worldDt);
-
-    // Движение трассы и зданий (пул)
-    for (const bar of this.trackBars) {
-      bar.position.z += dz;
-      if (bar.position.z > 16) {
-        bar.position.z -= 24 * 7;
-      }
+    // Движение фонарей и зданий (пул)
+    for (const lamp of this.streetLamps) {
+      lamp.position.z += dz;
+      if (lamp.position.z > 20) lamp.position.z -= 8 * 20;
     }
     for (const b of this.buildings) {
       b.group.position.z += dz;
-      if (b.group.position.z > 20) {
-        b.group.position.z -= 18 * 9.5;
-      }
+      if (b.group.position.z > 22) b.group.position.z -= 16 * 10.5;
     }
 
-    // Спавн новых волн
     this.spawnCooldownDist -= dz;
     if (this.spawnCooldownDist <= 0) {
       this.spawnWave();
       this.spawnCooldownDist = Math.max(17, 25 - (this.runSpeed - BASE_RUN_SPEED) * 0.25);
     }
 
-    // Актуальный честный хитбокс игрока (сжимается при подкате)
     const isSliding = this.slideTimer > 0 && this.isGrounded;
     const hitboxHeight = isSliding ? 0.8 : 1.72;
     this.playerBox.min.set(this.playerX - 0.34, this.playerY + 0.04, -0.32);
     this.playerBox.max.set(this.playerX + 0.34, this.playerY + hitboxHeight, 0.32);
 
-    // Обновление препятствий и коллизий
     for (const obs of this.obstaclePool) {
       if (!obs.active) continue;
       if (obs.smashed) {
@@ -1631,24 +2162,20 @@ class AltRunnerGame {
 
       obs.z += dz;
       obs.mesh.position.z = obs.z;
-
       if (obs.z > DESPAWN_Z) {
         obs.active = false;
         obs.mesh.visible = false;
         continue;
       }
 
-      // Проверка столкновения только рядом с игроком
       if (Math.abs(obs.z) < 5.5) {
         this.computeObstacleBox(obs, this.tempBox);
         if (this.playerBox.intersectsBox(this.tempBox)) {
-          const died = this.handleObstacleCollision(obs);
-          if (died) return;
+          if (this.handleObstacleCollision(obs)) return;
         }
       }
     }
 
-    // Обновление предметов и магнит Чокер-щита
     const magnetActive = this.buffs.shield.active || this.buffs.energy.active;
     for (const item of this.itemPool) {
       if (!item.active) continue;
@@ -1657,7 +2184,6 @@ class AltRunnerGame {
       item.mesh.rotation.y += 3.2 * worldDt;
       item.mesh.position.y = item.baseY + Math.sin(this.animClock * 4.5 + item.z * 0.3) * 0.14;
 
-      // Магнит для медиаторов
       if (item.type === 'mediator' && magnetActive && item.z > -15 && item.z < 2.2) {
         item.mesh.position.x += (this.playerX - item.mesh.position.x) * Math.min(1, 12 * rawDt);
         item.mesh.position.y += (this.playerY + 1.0 - item.mesh.position.y) * Math.min(1, 12 * rawDt);
@@ -1668,7 +2194,6 @@ class AltRunnerGame {
       if (item.z > DESPAWN_Z) {
         if (item.type === 'cassette') {
           this.cassetteOnTrack = false;
-          // Если игрок пропустил кассету — даем повторный шанс быстрее
           this.nextCassetteAt = this.runDistance + 420;
         }
         item.active = false;
@@ -1689,13 +2214,11 @@ class AltRunnerGame {
           item.mesh.position.z + radius
         );
         if (this.playerBox.intersectsBox(this.tempBox)) {
-          const openedVn = this.collectItem(item);
-          if (openedVn) return;
+          if (this.collectItem(item)) return;
         }
       }
     }
 
-    // Обновление частиц
     for (const p of this.particles) {
       if (!p.active) continue;
       p.life -= rawDt;
@@ -1713,8 +2236,7 @@ class AltRunnerGame {
       p.mesh.scale.setScalar(Math.max(0.05, p.life * 1.4));
     }
 
-    // Камера с легким наклоном, FOV под энергетиком и тряской
-    const targetFov = this.buffs.energy.active ? 74 : this.buffs.slowmo.active ? 56 : 62;
+    const targetFov = this.buffs.energy.active ? 72 : this.buffs.slowmo.active ? 54 : 60;
     this.camera.fov += (targetFov - this.camera.fov) * Math.min(1, 6 * rawDt);
     this.camera.updateProjectionMatrix();
 
@@ -1728,11 +2250,12 @@ class AltRunnerGame {
 
     this.camera.position.set(
       this.playerX * 0.48 + shakeX,
-      4.5 + this.playerY * 0.3 + shakeY,
-      8.2
+      4.2 + this.playerY * 0.3 + shakeY,
+      7.6
     );
     this.camera.lookAt(this.playerX * 0.24, 1.35 + this.playerY * 0.2, -10);
-    this.accentLight.position.set(this.playerX, 3.2, 2.2);
+    this.warmStreetLight.position.set(this.playerX + 3.2, 5.2, 2.5);
+    this.rimLight.position.set(this.playerX - 2.6, 2.6, -3.5);
 
     this.updateRunHud();
   }
@@ -1744,18 +2267,15 @@ class AltRunnerGame {
       targetBox.min.set(x - 0.94, 0, z - 0.32);
       targetBox.max.set(x + 0.94, 0.96, z + 0.32);
     } else if (obs.type === 'high') {
-      // Верхняя балка: при подкате (высота игрока 0.8) проходим чисто снизу
       targetBox.min.set(x - 0.96, 1.15, z - 0.36);
       targetBox.max.set(x + 0.96, 2.55, z + 0.36);
     } else {
-      // Вагон / грузовик
       targetBox.min.set(x - 0.98, 0, z - 4.18);
       targetBox.max.set(x + 0.98, 2.75, z + 4.18);
     }
   }
 
   handleObstacleCollision(obs) {
-    // 1. Энергетик: неуязвимость + разносим препятствие в щепки
     if (this.buffs.energy.active) {
       obs.smashed = true;
       obs.velX = (obs.lane <= this.laneIndex ? -1 : 1) * (8 + Math.random() * 6);
@@ -1767,12 +2287,8 @@ class AltRunnerGame {
       return false;
     }
 
-    // Короткая неуязвимость после щита или спотыкания
-    if (this.invulnTimer > 0) {
-      return false;
-    }
+    if (this.invulnTimer > 0) return false;
 
-    // 2. Чокер-щит: поглощает 1 столкновение
     if (this.buffs.shield.active) {
       this.buffs.shield.active = false;
       this.buffs.shield.remaining = 0;
@@ -1789,7 +2305,6 @@ class AltRunnerGame {
       return false;
     }
 
-    // 3. Спотыкание о барьер/арку (если Скуф-патрульный еще далеко -> он выбегает за спину!)
     if (obs.type !== 'train' && this.pursuerTimer <= 0) {
       this.pursuerTimer = 7.0;
       this.invulnTimer = 0.9;
@@ -1803,7 +2318,6 @@ class AltRunnerGame {
       return false;
     }
 
-    // 4. Фатальное столкновение или поимка Скуф-патрульным
     this.sound.playHit();
     this.cameraShake = 0.9;
     this.pursuerZ = 1.6;
@@ -1827,7 +2341,6 @@ class AltRunnerGame {
       this.sound.playMediator();
       return false;
     }
-
     if (item.type === 'energy') {
       const eff = this.story.getUpgradeEffect('energy');
       this.buffs.energy.active = true;
@@ -1839,7 +2352,6 @@ class AltRunnerGame {
       this.updateBuffHud();
       return false;
     }
-
     if (item.type === 'shield') {
       const eff = this.story.getUpgradeEffect('choker');
       this.buffs.shield.active = true;
@@ -1850,7 +2362,6 @@ class AltRunnerGame {
       this.updateBuffHud();
       return false;
     }
-
     if (item.type === 'slowmo') {
       const eff = this.story.getUpgradeEffect('tamagotchi');
       this.buffs.slowmo.active = true;
@@ -1860,7 +2371,6 @@ class AltRunnerGame {
       this.updateBuffHud();
       return false;
     }
-
     if (item.type === 'cassette') {
       this.cassetteOnTrack = false;
       this.sound.playCassette();
@@ -1870,7 +2380,6 @@ class AltRunnerGame {
         return true;
       }
     }
-
     return false;
   }
 
@@ -1888,57 +2397,62 @@ class AltRunnerGame {
         if (key === 'shield') this.altushka.shieldAura.visible = false;
       }
     }
-    if (dirty) {
-      this.updateBuffHud();
-    }
+    if (dirty) this.updateBuffHud();
   }
 
   animateAltushka(speed) {
     const rig = this.altushka;
     rig.root.position.set(this.playerX, this.playerY, 0);
 
-    // Легкий крен при смене полосы
+    // Динамическая тень при прыжке
+    rig.shadowBlob.position.y = -this.playerY + 0.03;
+    const shadowScale = Math.max(0.4, 1 - this.playerY * 0.16);
+    rig.shadowBlob.scale.setScalar(shadowScale);
+
     const laneDiff = LANES[this.laneIndex] - this.playerX;
     rig.root.rotation.z = -laneDiff * 0.14;
 
     const isSliding = this.slideTimer > 0 && this.isGrounded;
     if (isSliding) {
-      // Подкат: пригибаемся и сжимаем силуэт
-      rig.bodyPivot.position.y = -0.35;
+      rig.bodyPivot.position.y = -0.36;
       rig.bodyPivot.rotation.x = -0.95;
       rig.bodyPivot.scale.y = 0.72;
+      rig.skirtPivot.rotation.z = 0;
       rig.leftLeg.rotation.x = 0.65;
       rig.rightLeg.rotation.x = -0.3;
       rig.leftArm.rotation.x = -0.7;
       rig.rightArm.rotation.x = -0.7;
     } else if (!this.isGrounded) {
-      // Прыжок
       rig.bodyPivot.position.y = 0;
       rig.bodyPivot.rotation.x = 0.14;
       rig.bodyPivot.scale.y = 1;
+      rig.skirtPivot.rotation.z = 0;
       rig.leftLeg.rotation.x = 0.72;
       rig.rightLeg.rotation.x = -0.55;
       rig.leftArm.rotation.x = -1.1;
       rig.rightArm.rotation.x = -0.9;
     } else {
-      // Плавный цикл бега
       const freq = speed * 0.42;
       const swing = Math.sin(this.animClock * freq);
-      rig.bodyPivot.position.y = Math.abs(Math.cos(this.animClock * freq)) * 0.11;
-      rig.bodyPivot.rotation.x = 0.12;
+      rig.bodyPivot.position.y = Math.abs(Math.cos(this.animClock * freq)) * 0.1;
+      rig.bodyPivot.rotation.x = 0.11;
       rig.bodyPivot.scale.y = 1;
-      rig.leftLeg.rotation.x = swing * 0.95;
-      rig.rightLeg.rotation.x = -swing * 0.95;
-      rig.leftArm.rotation.x = -swing * 0.85;
-      rig.rightArm.rotation.x = swing * 0.85;
+      // Легкое женственное покачивание бедер и юбки при беге
+      rig.skirtPivot.rotation.z = swing * 0.08;
+      rig.leftLeg.rotation.x = swing * 0.92;
+      rig.rightLeg.rotation.x = -swing * 0.92;
+      rig.leftArm.rotation.x = -swing * 0.82;
+      rig.rightArm.rotation.x = swing * 0.82;
     }
 
-    // Подпрыгивание черно-розовых хвостиков
-    const tailBounce = Math.sin(this.animClock * 11) * 0.18;
-    rig.leftTailPivot.rotation.z = tailBounce;
-    rig.rightTailPivot.rotation.z = -tailBounce;
+    // Двойная физика пружинящих хвостиков
+    const tailBounce = Math.sin(this.animClock * 11) * 0.16;
+    const tailLag = Math.cos(this.animClock * 11) * 0.22;
+    rig.leftTail.pivot.rotation.z = tailBounce;
+    rig.rightTail.pivot.rotation.z = -tailBounce;
+    rig.leftTail.midPivot.rotation.x = 0.2 + Math.abs(tailLag);
+    rig.rightTail.midPivot.rotation.x = 0.2 + Math.abs(tailLag);
 
-    // Вращение аур баффов
     if (rig.shieldAura.visible) {
       rig.shieldAura.rotation.y += 0.04;
       rig.shieldAura.rotation.x += 0.02;
@@ -1948,10 +2462,8 @@ class AltRunnerGame {
     }
   }
 
-  updatePursuer(rawDt, worldDt) {
-    if (this.pursuerTimer > 0) {
-      this.pursuerTimer = Math.max(0, this.pursuerTimer - rawDt);
-    }
+  updatePursuer(rawDt) {
+    if (this.pursuerTimer > 0) this.pursuerTimer = Math.max(0, this.pursuerTimer - rawDt);
     const targetZ = this.pursuerTimer > 0 ? 2.15 : 11.5;
     this.pursuerZ += (targetZ - this.pursuerZ) * Math.min(1, 3.8 * rawDt);
     this.pursuerX += (this.playerX - this.pursuerX) * Math.min(1, 6.5 * rawDt);
@@ -1975,18 +2487,23 @@ class AltRunnerGame {
     this.animateAltushka(12);
     this.skuf.root.visible = false;
 
-    const dz = 8 * dt;
-    for (const bar of this.trackBars) {
-      bar.position.z += dz;
-      if (bar.position.z > 16) bar.position.z -= 24 * 7;
+    const dz = 7 * dt;
+    this.textures.asphalt.offset.y += dz * 0.1;
+    this.textures.sidewalk.offset.y += dz * 0.13;
+
+    for (const lamp of this.streetLamps) {
+      lamp.position.z += dz;
+      if (lamp.position.z > 20) lamp.position.z -= 8 * 20;
     }
     for (const b of this.buildings) {
       b.group.position.z += dz;
-      if (b.group.position.z > 20) b.group.position.z -= 18 * 9.5;
+      if (b.group.position.z > 22) b.group.position.z -= 16 * 10.5;
     }
 
-    this.camera.position.set(Math.sin(this.animClock * 0.35) * 1.1, 4.4, 8.2);
-    this.camera.lookAt(0, 1.4, -10);
+    // Плавный кинематографичный облет камеры в Хабе
+    const camAngle = Math.sin(this.animClock * 0.35) * 0.55;
+    this.camera.position.set(Math.sin(camAngle) * 5.2, 3.4, Math.cos(camAngle) * 5.6);
+    this.camera.lookAt(0, 1.25, -2.5);
   }
 
   // ===================== HUD И UI ХАБА =====================
@@ -2040,7 +2557,6 @@ class AltRunnerGame {
     this.dom.hubBestDistance.textContent = String(this.story.bestDistance);
     this.dom.hubChapterStatus.textContent = `${this.story.unlockedChapter} / ${CHAPTERS.length}`;
 
-    // Кнопки выбора глав
     const buttons = this.dom.chapterList.querySelectorAll('.chapter-btn');
     for (const btn of buttons) {
       const ch = Number(btn.dataset.chapter);
@@ -2058,12 +2574,10 @@ class AltRunnerGame {
       }
     }
 
-    // Описание и прогресс выбранной главы
     const prog = this.story.getChapterProgress();
     this.dom.hubChapterDesc.textContent =
       `Глава ${prog.chapterId}: «${prog.title}» · ${prog.distance}/${prog.targetDistance}м · Кассеты ${prog.cassettesCollected}/${prog.cassettesTotal}`;
 
-    // Апгрейды
     const syncUpgrade = (key, lvlEl, costEl, btnEl) => {
       const lvl = this.story.getUpgradeLevel(key);
       const cost = this.story.getUpgradeCost(key);
@@ -2080,13 +2594,12 @@ class AltRunnerGame {
     syncUpgrade('shield', this.dom.upgShieldLvl, this.dom.upgShieldCost, this.dom.btnUpgShield);
     syncUpgrade('slowmo', this.dom.upgSlowmoLvl, this.dom.upgSlowmoCost, this.dom.btnUpgSlowmo);
 
-    // Счетчик концовок
     const gallery = this.story.getEndingsGallery();
     const unlockedCount = gallery.filter((e) => e.unlocked).length;
     this.dom.hubEndingsCount.textContent = `${unlockedCount}/${gallery.length}`;
   }
 
-  // ===================== ВИЗУАЛЬНАЯ НОВЕЛЛА (КАССЕТЫ) =====================
+  // ===================== ВИЗУАЛЬНАЯ НОВЕЛЛА =====================
   openVisualNovel(cassette) {
     this.state = 'vn';
     this.sound.stopMusic();
@@ -2197,7 +2710,6 @@ class AltRunnerGame {
       this.applyChapterTheme(this.vnState.pendingUnlockChapter);
     }
 
-    // Даем короткую неуязвимость при возврате в забег, чтобы не врезаться мгновенно
     this.invulnTimer = 1.6;
     this.state = 'playing';
     this.dom.hud.classList.remove('hidden');
@@ -2282,7 +2794,6 @@ class AltRunnerGame {
   }
 }
 
-// Запуск приложения
 window.addEventListener('DOMContentLoaded', () => {
   new AltRunnerGame();
 });
